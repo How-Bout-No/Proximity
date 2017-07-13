@@ -30,10 +30,20 @@ batbox /g 36 19
 cd..\..
 echo Checking for updates...
 echo.
-"C:\Program Files\curl\curl.exe" -s http://textuploader.com/dkfvz/raw -o output.txt
->nul find "%5" output.txt && (
-timeout 1 /nobreak > nul & goto start
-) || (
+
+
+curl -s https://api.github.com/repos/KodeItDEV/Proximity/releases/latest | find /c "https://github.com/KodeItDEV/Proximity/releases/download/%5/CR_App.zip"
+if %errorlevel%==0 timeout 1 /nobreak > nul & goto start
+if %errorlevel%==1 timeout 1 /nobreak > nul & goto newupd
+
+:newupd
+set string=%5
+set vidx=0
+for %%x in (%string:.= %) do (
+set /a vidx=!vidx! + 1
+set ver!vidx!=%%x
+)
+cls
 echo A new version is available^^!
 echo.
 timeout 1 /nobreak > nul
@@ -43,7 +53,6 @@ echo.
 timeout 1 /nobreak > nul
 libraries\cmdmenusel 0ff0 "Update Now" "Update Later"
 if %errorlevel%==2 exit /b
-)
 goto update
 
 :start
@@ -278,7 +287,8 @@ exit
 cls
 title Updating...
 for %%a in ("%~dp0..\..") do set "curdir=%%~fa"
+set /a ver3+=1
 echo.
 echo Downloading Update...
-bitsadmin.exe /transfer "Update" https://www.dropbox.com/s/io09c0mbkiiznf5/CR_App.zip?dl=1 "C:\Temp\CR_App.zip" > nul 2>&1
+bitsadmin.exe /transfer "Update" https://github.com/KodeItDEV/Proximity/releases/download/%ver1%.%ver2%.%ver3%/CR_App.zip "C:\Temp\CR_App.zip" > nul 2>&1
 start cmd.exe /c "@echo off & title Applying Update... & cls & echo. & echo Applying Update... & Taskkill /FI "WINDOWTITLE eq Updating..." & cd %curdir% & rd /s /q "%curdir%\Application" & call C:\Temp\zipjs.bat unzip -source "C:\Temp\CR_App.zip" -destination "%curdir%\Application" -keep no -force yes & cls & echo. & echo Complete! & pause & exit"

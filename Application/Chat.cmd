@@ -22,14 +22,13 @@ for /F "delims== tokens=1,*" %%x in (Settings.cfg) do (
     set var!vidx!=%%y
 )
 
-if not exist "logs" md logs
 
 FOR /F "tokens=2,3" %%A IN ('ping %computername% -n 1 -4') DO IF "from"== "%%A" set "IP=%%~B"
 set pcip=%IP:~0,-1%
 
-getmac /fo table /nh > mac.txt
+getmac /fo table /nh > libraries\mac.txt
 set vidx=0
-for /F "tokens=1,*" %%x in (mac.txt) do (
+for /F "tokens=1,*" %%x in (libraries\mac.txt) do (
     SET /A vidx=!vidx! + 1
     set mac!vidx!=%%x
 )
