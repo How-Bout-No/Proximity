@@ -15,5 +15,5 @@ After signing up, you can either customize your user under the 'Settings' menu o
 
 Once logged in, Proximity will again connect to the server to ensure connectivity, and will log in to said server.
 
-## Commands:
+## Chat Commands:
 `.exit` - Exits the program
