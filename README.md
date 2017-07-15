@@ -1,5 +1,9 @@
 # Proximity
 A Completely Open-Source Windows CMD/Batch LAN Chatroom
+- It's very quick and easy-to-use
+- The installer does all the work so you don't have to
+- It's simple, yet powerful
+
 
 
 ## How It Works:
