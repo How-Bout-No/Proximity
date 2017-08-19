@@ -21,3 +21,7 @@ Once logged in, Proximity will again connect to the server to ensure connectivit
 
 ## Chat Commands:
 `.exit` - Exits the program
+
+
+## Disclaimer:
+*I do not take credit for most of the files used in 'Application\Libraries'. I did not create them and I am unable to link to them directly due to there not being a direct source.*
