@@ -5,7 +5,7 @@ setlocal enabledelayedexpansion
 set pcip=%3
 
 MODE CON COLS=120 LINES=30
-libraries\Cmdow\bin\Release\cmdow.exe "Chatroom" /MOV 300 200
+libraries\Cmdow\Cmdow\bin\Release\cmdow.exe "Chatroom" /MOV 300 200
 
 for /F "tokens=7 delims== " %%G in ('
     ping -4 -n 1 %pcip%^|findstr /i "TTL="') do if not %%G==TTL @set pingspeed=%%G

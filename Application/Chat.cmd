@@ -14,7 +14,7 @@ for /f "tokens=*" %%A in (a.txt) do (set "result=%%A")
 del /q "a.txt"
 set vertires=%result%
 
-libraries\Cmdow\bin\Release\cmdow.exe "Chat" /MOV %horires% %vertires%
+libraries\Cmdow\Cmdow\bin\Release\cmdow.exe "Chat" /MOV %horires% %vertires%
 setlocal ENABLEDELAYEDEXPANSION
 set vidx=-1
 for /F "delims== tokens=1,*" %%x in (Settings.cfg) do (
@@ -34,6 +34,7 @@ for /F "tokens=1,*" %%x in (libraries\mac.txt) do (
 )
 
 FOR /F "tokens=1,2" %%A IN ('arp -a') DO IF NOT "%pcip%"== "%%A" FOR /F "tokens=1,2" %%A IN ('arp -a') DO IF "%mac3%"== "%%B" set "pcip=%%A"
+del libraries\mac.txt
 
 cls
 if "%var3%"=="false" (
