@@ -1,10 +1,11 @@
 # Proximity
 A Completely Open-Source Python Chatroom
+***
+## Info
+Proximity is a chat program, which was recently completely overhauled to a brand new language, Python 3.6. It allows the user to connect to chat servers hosted by other users, either locally or over the internet.
 
-## Setting Up
-To setup Proximity, just download the latest version of [Proximity.exe](https://github.com/KodeItDEV/Proximity/releases/tag/2.0.0).
+The source is available to everyone, whether to be adjusted to one's needs or to supply any necessary information to those who need it.
 
-Navigate to Server -> Connect, and type in the proper IP and Port to the chat server you'd like to connect to.
+The scripts are released as EXE's as to not require a full client-side installation of Python 3.6, in other words it just creates less hassle, and there's less things to handle or require.
 
-To host a server, makes sure [Server,exe](https://github.com/KodeItDEV/Proximity/releases/tag/2.0.0) is located in the same directory as Proximity.exe. Then, in the Proximity client, navigate to Server -> Host and type in the information you'll need.
-If you want to host a server locally only, set the ip to '127.0.0.1', and if you want to host the server over the internet set the ip to '0.0.0.0'
+Proximity works right out of the box, immediately prepared to a chat server that you supply it with.
