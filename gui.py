@@ -2,9 +2,8 @@
 #=======================================================#
 #           P R O X I M I T Y     C H A T               #
 #                                                       #
-# ! DO NOT CHANGE VERSION NUMBER !                      #
+#          ! DO NOT CHANGE VERSION NUMBER !             #
 version = '2.0.0'
-https://github.com/KodeItDEV/Proximity/releases/download/1.0.0/CR_App.zip
 #=======================================================#
 
 import os
@@ -225,9 +224,6 @@ def server_host():
 def options_win():
     print("Yee")
 
-
-# * Toolbar * #
-
 toolbar = Frame(root)
 
 server = Menubutton(toolbar, text="Server", relief=RAISED)
@@ -260,8 +256,6 @@ server.pack(side=LEFT, padx=2, pady=2)
 #options.pack(side=RIGHT, padx=2, pady=2)
 
 toolbar.pack(side=TOP, fill=X)
-
-# * Toolbar * #
 
 Log = Text(root, bg="WHITE", bd=3, height=29, width=122, state=DISABLED)
 Log.yview_scroll(1, "units")
@@ -314,11 +308,10 @@ def establish_conn():
             #Log.config(state=DISABLED)
             #cprint("Error! Connection to server lost.", 'red', attrs=['reverse'])
 
-    # Launch the thread...
     t = threading.Thread(target=get_message, args=())
-    t.daemon = True  # YOU MAY NOT WANT THIS: Only use this line if you want the program to exit without waiting for the thread to finish
-    t.start()  # Starts the thread
-    t.setName('getMsg')  # Makes it easier to interact with the thread later
+    t.daemon = True
+    t.start()
+    t.setName('getMsg')
 
     def send_message(var):
         try:
