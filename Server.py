@@ -7,11 +7,9 @@ import time
 ip = sys.argv[1]
 port = sys.argv[2]
 
-# Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-# Bind the socket to the port
 server_address = (ip, int(port))
-print("# Proximity Server v1.0.0\n")
+print("# Proximity Server v1.1.0\n")
 print("\nHosting server on '%s' port '%s'\n" % server_address)
 sock.bind(server_address)
 
@@ -22,6 +20,7 @@ while True:
     chost, cip = addr
     data = data.decode()
     print(data)
+    sock.sendto(data.encode('utf-8'), addr)
     if (data[0:2] == '<i') and (data[-2:] == 'p>'):
         chost = data[2:-2]
         clients.append((chost, cip))

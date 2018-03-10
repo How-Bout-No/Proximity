@@ -3,7 +3,7 @@
 #           P R O X I M I T Y     C H A T               #
 #                                                       #
 #          ! DO NOT CHANGE VERSION NUMBER !             #
-version = '2.0.0'
+version = '2.1.0'
 #=======================================================#
 
 import os
@@ -21,8 +21,18 @@ print(os.getcwd())
 
 # Set directories
 workdir = os.getcwd()
-proxdir = os.path.expanduser('~/AppData/Local/.Proximity')
-usrdir = os.path.expanduser('~/Documents/Proximity')
+proxdir = os.path.expanduser('~/AppData/Local')
+usrdir = os.path.expanduser('~/Documents')
+if os.path.isdir("~/AppData/Local/.Proximity") is 'True':
+    proxdir = os.path.expanduser('~/AppData/Local/.Proximity')
+elif os.path.isdir("~/AppData/Local/.Proximity") is 'False':
+    os.makedirs(proxdir+'/.Proximity')
+    proxdir = os.path.expanduser('~/AppData/Local/.Proximity')
+if os.path.isdir("~/Documents/Proximity") is 'True':
+    usrdir = os.path.expanduser('~/Documents/Proximity')
+elif os.path.isdir("~/Documents/Proximity") is 'False':
+    os.makedirs(usrdir+'/Proximity')
+    usrdir = os.path.expanduser('~/Documents/Proximity')
 os.chdir(proxdir)
 print(os.getcwd())
 
@@ -52,7 +62,7 @@ def exitinit():
 ######################################################
 init = Tk()
 init.title("\n")
-init.iconbitmap("%s/_files/icon2.ico" % proxdir)
+init.iconbitmap("%s/_files/icon2.ico" % workdir)
 
 center(init, 100, 0, 0, 0)
 init.resizable(False, False)
@@ -75,7 +85,7 @@ userinput = Entry(init, textvariable=u)
 def signin(event=None):
     global usr
     usr = u.get()  # Get username
-    f = open("%s/_files/localuser.dat" % proxdir, "a")
+    f = open("%s/_files/localuser.dat" % workdir, "a")
     f.write("[user]\n")
     f.write("Username: %s\n" % usr)
     exit_win(init)
@@ -92,8 +102,8 @@ init.bind('<Return>', signin)
 
 init.protocol('WM_DELETE_WINDOW', exitinit)
 
-if os.path.isfile("%s/_files/localuser.dat" % proxdir):
-    config.read("%s/_files/localuser.dat" % proxdir)
+if os.path.isfile("%s/_files/localuser.dat" % workdir):
+    config.read("%s/_files/localuser.dat" % workdir)
     usr = config.get("user", "Username")
     exit_win(init)
 
@@ -101,14 +111,14 @@ init.mainloop()
 ################################################################################
 root = Tk()
 root.title("Proximity Chat")
-root.iconbitmap(proxdir + "/_files/icon2.ico")
-
+root.iconbitmap(workdir + "/_files/icon2.ico")
 
 def serverconn():
     global usr
+    #print(Connect.get())
     host_win = Toplevel()
     host_win.title("\n")
-    host_win.iconbitmap(proxdir + "/_files/icon2.ico")
+    host_win.iconbitmap(workdir + "/_files/icon2.ico")
 
     center(host_win, 100, 0, 0, 0)
     host_win.resizable(False, False)
@@ -143,7 +153,7 @@ def serverconn():
     ipinput = Entry(host_win, textvariable=ip, width=20)
     portinput = Entry(host_win, textvariable=port, width=20)
 
-    ipinput.insert(0, "75.133.121.113")
+    ipinput.insert(0, "127.0.0.1")
     portinput.insert(0, "60501")
 
     join_server = Button(host_win, text="Join Server", command=join_server)
@@ -161,7 +171,7 @@ def server_host():
     global usr
     host_win = Toplevel()
     host_win.title("\n")
-    host_win.iconbitmap(proxdir + "/_files/icon2.ico")
+    host_win.iconbitmap(workdir + "/_files/icon2.ico")
 
     center(host_win, 100, 0, 0, 0)
     host_win.resizable(False, False)
@@ -172,7 +182,7 @@ def server_host():
         ipout = ip.get()
         portout = port.get()
         os.chdir(proxdir)
-        os.system("start python %s/Server.py %s %s" % (workdir, ipout, portout))
+        os.system("start %s/Server.exe %s %s" % (workdir, ipout, portout))
         exit_win(host_win)
 
     def limit_input(*args):
@@ -224,6 +234,7 @@ def server_host():
 def options_win():
     print("Yee")
 
+
 toolbar = Frame(root)
 
 server = Menubutton(toolbar, text="Server", relief=RAISED)
@@ -234,12 +245,10 @@ server["menu"] = server.menu
 Connect = IntVar()
 Host = IntVar()
 
-server.menu.add_checkbutton(label="Connect",
-                            variable=Connect,
-                            command=serverconn)
-server.menu.add_checkbutton(label="Host",
-                            variable=Host,
-                            command=server_host)
+server.menu.add_command(label="Connect",
+                        command=serverconn)
+server.menu.add_command(label="Host",
+                        command=server_host)
 
 server.pack(side=LEFT, padx=2, pady=2)
 
@@ -287,21 +296,28 @@ def establish_conn():
     sock.sendto(initip.encode('utf-8'), server_address)
     Log.delete(1.0, END)
     print("Connecting to '%s' port '%s'" % server_address)
+    sock.settimeout(5)
     try:
+        sock.recv(512)
         Log.insert(INSERT, "Connected to '%s' port '%s'\n" % server_address)
         cprint("Connection success!", 'green', attrs=['reverse'])
-    except:
-        pass
+    except Exception:
         Log.insert(INSERT, "Connection failed!")
         cprint("Connection failed!", 'red', attrs=['reverse'])
+    finally:
+        sock.settimeout(0)
+        sock.setblocking(True)
 
     def get_message():
+        cachedata = ''
         #try:
         while True:
             data = sock.recv(512)
-            Log.config(state=NORMAL)
-            Log.insert(INSERT, "%s\n" % data.decode())
-            Log.config(state=DISABLED)
+            if not data.decode() == cachedata:
+                Log.config(state=NORMAL)
+                Log.insert(INSERT, data.decode()+"\n")
+                Log.config(state=DISABLED)
+            cachedata = str(data.decode())
         #except:
             #Log.config(state=NORMAL)
             #Log.insert(INSERT, "Connection to server lost.\n")
@@ -317,6 +333,7 @@ def establish_conn():
         try:
             global messageSend
             message = "%s: %s" % (usr, messageSend.get())
+            message = message.replace('\n', ' ').replace('\r', ' ')
             print(message)
             messageSend.delete(0, END)
             sock.sendto(message.encode('utf-8'), server_address)
