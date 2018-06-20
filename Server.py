@@ -30,14 +30,17 @@ while True:
             for client in clients:
                 lst = ['::', str(data[1] + ' has joined the server')]
                 sock.sendto(pickle.dumps(lst), client)
+                print(data[1] + ' has joined the server')
         elif data[0] == '$cc':
             clients.remove((chost, cip))
             print(clients)
             for client in clients:
                 lst = [';;', str(data[1] + ' has left the server')]
                 sock.sendto(pickle.dumps(lst), client)
+                print(data[1] + ' has joined the server')
     except:
         data = data.decode()
+        print(data)
         data = data.encode('utf-8')
         for client in clients:
             try:
