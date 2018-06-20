@@ -19,15 +19,15 @@ print(os.getcwd())
 workdir = os.getcwd()
 proxdir = os.path.expanduser('~/AppData/Local')
 usrdir = os.path.expanduser('~/Documents')
-if os.path.isdir(proxdir+"/.Proximity"):
+if os.path.isdir(proxdir + "/.Proximity"):
     proxdir = os.path.expanduser('~/AppData/Local/.Proximity')
-elif not os.path.isdir(proxdir+"/.Proximity"):
-    os.makedirs(proxdir+'/.Proximity')
+elif not os.path.isdir(proxdir + "/.Proximity"):
+    os.makedirs(proxdir + '/.Proximity')
     proxdir = os.path.expanduser('~/AppData/Local/.Proximity')
-if os.path.isdir(usrdir+"/Proximity"):
+if os.path.isdir(usrdir + "/Proximity"):
     usrdir = os.path.expanduser('~/Documents/Proximity')
-elif not os.path.isdir(usrdir+"/Proximity"):
-    os.makedirs(usrdir+'/Proximity')
+elif not os.path.isdir(usrdir + "/Proximity"):
+    os.makedirs(usrdir + '/Proximity')
     usrdir = os.path.expanduser('~/Documents/Proximity')
 os.chdir(proxdir)
 print(os.getcwd())
@@ -102,7 +102,9 @@ def signin(event=None):
             else:
                 messagebox.showerror(init, message="Incorrect Username/Password")
         else:
-            err1 = messagebox.askquestion(init, message="User '%s' does not exist.\nWould you like to create a new profile?" % (usr))
+            err1 = messagebox.askquestion(init,
+                                          message="User '%s' does not exist.\nWould you like to create a new profile?" % (
+                                              usr))
             if err1 == "yes":
                 f = open("%s/_files/localuser.dat" % proxdir, "w")
                 f.write("[user]\n")
@@ -115,6 +117,7 @@ def signin(event=None):
     f.write("Username: %s\n" % usr)
     exit_win(init)
     """
+
 
 login = Button(init, text="Sign In", command=signin)
 
@@ -141,9 +144,10 @@ root = Tk()
 root.title("Proximity Chat")
 root.iconbitmap(workdir + "/_files/icon2.ico")
 
+
 def serverconn():
     global usr
-    #print(Connect.get())
+    # print(Connect.get())
     host_win = Toplevel()
     host_win.title("\n")
     host_win.iconbitmap(workdir + "/_files/icon2.ico")
@@ -280,17 +284,17 @@ server.menu.add_command(label="Host",
 
 server.pack(side=LEFT, padx=2, pady=2)
 
-#options = Menubutton(toolbar, text="Options", relief=RAISED)
-#options.menu = Menu(options, tearoff=0)
-#options["menu"] = options.menu
+# options = Menubutton(toolbar, text="Options", relief=RAISED)
+# options.menu = Menu(options, tearoff=0)
+# options["menu"] = options.menu
 
-#option1 = IntVar()
-#option = IntVar()
+# option1 = IntVar()
+# option = IntVar()
 
-#options.menu.add_checkbutton(label="Connect", variable=option1)
-#options.menu.add_checkbutton(label="Host", variable=option)
+# options.menu.add_checkbutton(label="Connect", variable=option1)
+# options.menu.add_checkbutton(label="Host", variable=option)
 
-#options.pack(side=RIGHT, padx=2, pady=2)
+# options.pack(side=RIGHT, padx=2, pady=2)
 
 toolbar.pack(side=TOP, fill=X)
 
@@ -318,7 +322,6 @@ def establish_conn():
     port = int(port_out)
     server_address = (ip, port)
     print(server_address)
-    #host = gethostbyname(gethostname())
     inituser = pickle.dumps(['$inituser', usr])
     cc = pickle.dumps(['$cc', usr])
     sock.sendto(inituser, server_address)
@@ -328,17 +331,14 @@ def establish_conn():
     try:
         sock.recv(256)
         Log.insert(INSERT, "Connected to '%s' port '%s'\n" % server_address)
-        cprint("Connection success!", 'green', attrs=['reverse'])
     except Exception:
         print(traceback.format_exc())
         Log.insert(INSERT, "Connection failed!")
-        cprint("Connection failed!", 'red', attrs=['reverse'])
     finally:
         sock.settimeout(0)
         sock.setblocking(True)
 
     def get_message():
-        cachedata = ''
         try:
             while True:
                 data = sock.recv(256)
@@ -349,7 +349,7 @@ def establish_conn():
                 except:
                     textdata = data.decode()
                 Log.config(state=NORMAL)
-                Log.insert(INSERT, textdata+"\n")
+                Log.insert(INSERT, textdata + "\n")
                 Log.config(state=DISABLED)
                 if type(data) == list:
                     if data[0] == '::':
@@ -365,7 +365,6 @@ def establish_conn():
             Log.config(state=NORMAL)
             Log.insert(INSERT, "Connection to server lost.\n")
             Log.config(state=DISABLED)
-            cprint("Error! Connection to server lost.", 'red', attrs=['reverse'])
 
     t = threading.Thread(target=get_message, args=())
     t.daemon = True
@@ -382,7 +381,7 @@ def establish_conn():
                 messageSend.delete(0, END)
                 sock.sendto(message.encode('utf-8'), server_address)
         except:
-            cprint("Error! Message not sent.", 'red', attrs=['reverse'])
+            print(traceback.format_exc())
 
     root.bind("<Return>", send_message)
 
