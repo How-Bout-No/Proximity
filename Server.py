@@ -3,6 +3,9 @@ import socket
 import sys
 import threading
 import time
+import traceback
+from datetime import datetime
+import pickle
 
 ip = sys.argv[1]
 port = sys.argv[2]
@@ -16,20 +19,28 @@ sock.bind(server_address)
 clients = []
 
 while True:
-    data, addr = sock.recvfrom(512)
+    data, addr = sock.recvfrom(256)
     chost, cip = addr
-    data = data.decode()
-    print(data)
-    sock.sendto(data.encode('utf-8'), addr)
-    if (data[0:2] == '<i') and (data[-2:] == 'p>'):
-        chost = data[2:-2]
-        clients.append((chost, cip))
-        print(clients)
-    elif (data[0:2] == '<c') and (data[-2:] == 'c>'):
-        chost = data[2:-2]
-        clients.remove((chost, cip))
-        print(clients)
-    else:
+    try:
+        data = pickle.loads(data)
+        if data[0] == '$inituser':
+            sock.sendto(pickle.dumps(data), addr)
+            clients.append((chost, cip))
+            print(clients)
+            for client in clients:
+                lst = ['::', str(data[1] + ' has joined the server')]
+                sock.sendto(pickle.dumps(lst), client)
+        elif data[0] == '$cc':
+            clients.remove((chost, cip))
+            print(clients)
+            for client in clients:
+                lst = [';;', str(data[1] + ' has left the server')]
+                sock.sendto(pickle.dumps(lst), client)
+    except:
+        data = data.decode()
         data = data.encode('utf-8')
         for client in clients:
-            sock.sendto(data, client)
+            try:
+                sock.sendto(data, client)
+            except:
+                print(traceback.format_exc())

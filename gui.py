@@ -1,11 +1,3 @@
-
-#=======================================================#
-#           P R O X I M I T Y     C H A T               #
-#                                                       #
-#          ! DO NOT CHANGE VERSION NUMBER !             #
-version = '2.1.0'
-#=======================================================#
-
 import os
 import sys
 from tkinter import *
@@ -15,6 +7,10 @@ import time
 import threading
 from socket import *
 from termcolor import *
+import traceback
+from datetime import datetime
+import pickle
+from hashlib import sha256
 
 config = configparser.ConfigParser()
 print(os.getcwd())
@@ -23,14 +19,14 @@ print(os.getcwd())
 workdir = os.getcwd()
 proxdir = os.path.expanduser('~/AppData/Local')
 usrdir = os.path.expanduser('~/Documents')
-if os.path.isdir("~/AppData/Local/.Proximity") is 'True':
+if os.path.isdir(proxdir+"/.Proximity"):
     proxdir = os.path.expanduser('~/AppData/Local/.Proximity')
-elif os.path.isdir("~/AppData/Local/.Proximity") is 'False':
+elif not os.path.isdir(proxdir+"/.Proximity"):
     os.makedirs(proxdir+'/.Proximity')
     proxdir = os.path.expanduser('~/AppData/Local/.Proximity')
-if os.path.isdir("~/Documents/Proximity") is 'True':
+if os.path.isdir(usrdir+"/Proximity"):
     usrdir = os.path.expanduser('~/Documents/Proximity')
-elif os.path.isdir("~/Documents/Proximity") is 'False':
+elif not os.path.isdir(usrdir+"/Proximity"):
     os.makedirs(usrdir+'/Proximity')
     usrdir = os.path.expanduser('~/Documents/Proximity')
 os.chdir(proxdir)
@@ -77,24 +73,56 @@ def limit_input(*args):
 
 u = StringVar()
 u.trace('w', limit_input)
+p = StringVar()
+c = StringVar()
+q = StringVar()
 
 userlabel = Label(init, text="Username:")
 userinput = Entry(init, textvariable=u)
+passlabel = Label(init, text="Password:")
+passinput = Entry(init, show="•", textvariable=p)
 
 
 def signin(event=None):
     global usr
     usr = u.get()  # Get username
+    pswrd = p.get()  # Get password
+    if (usr == "" or pswrd == "" or " " in usr or " " in pswrd):
+        messagebox.showerror(init, message="Invalid Username/Password")
+    else:
+        if os.path.isfile("%s/_files/localuser.dat" % proxdir):
+            config.read("%s/_files/localuser.dat" % proxdir)
+            username = config.get("user", "Username")
+            userpass = config.get("user", "Password")
+            if sha256(usr.encode('utf-8')).hexdigest() == username:
+                if sha256(pswrd.encode('utf-8')).hexdigest() == userpass:
+                    exit_win(init)
+                else:
+                    messagebox.showerror(init, message="Incorrect Username/Password")
+            else:
+                messagebox.showerror(init, message="Incorrect Username/Password")
+        else:
+            err1 = messagebox.askquestion(init, message="User '%s' does not exist.\nWould you like to create a new profile?" % (usr))
+            if err1 == "yes":
+                f = open("%s/_files/localuser.dat" % proxdir, "w")
+                f.write("[user]\n")
+                f.write("Username: %s\n" % sha256(usr.encode('utf-8')).hexdigest())
+                f.write("Password: %s\n" % sha256(pswrd.encode('utf-8')).hexdigest())
+                exit_win(init)
+    """
     f = open("%s/_files/localuser.dat" % workdir, "a")
     f.write("[user]\n")
     f.write("Username: %s\n" % usr)
     exit_win(init)
+    """
 
 login = Button(init, text="Sign In", command=signin)
 
 userlabel.grid(row=1)
+passlabel.grid(row=2)
 
 userinput.grid(row=1, column=2)
+passinput.grid(row=2, column=2)
 
 login.grid(columnspan=3)
 
@@ -290,18 +318,19 @@ def establish_conn():
     port = int(port_out)
     server_address = (ip, port)
     print(server_address)
-    host = gethostbyname(gethostname())
-    initip = "<i" + host + "p>"
-    cc = "<c" + host + "c>"
-    sock.sendto(initip.encode('utf-8'), server_address)
+    #host = gethostbyname(gethostname())
+    inituser = pickle.dumps(['$inituser', usr])
+    cc = pickle.dumps(['$cc', usr])
+    sock.sendto(inituser, server_address)
     Log.delete(1.0, END)
     print("Connecting to '%s' port '%s'" % server_address)
-    sock.settimeout(5)
+    sock.settimeout(15)
     try:
-        sock.recv(512)
+        sock.recv(256)
         Log.insert(INSERT, "Connected to '%s' port '%s'\n" % server_address)
         cprint("Connection success!", 'green', attrs=['reverse'])
     except Exception:
+        print(traceback.format_exc())
         Log.insert(INSERT, "Connection failed!")
         cprint("Connection failed!", 'red', attrs=['reverse'])
     finally:
@@ -310,19 +339,33 @@ def establish_conn():
 
     def get_message():
         cachedata = ''
-        #try:
-        while True:
-            data = sock.recv(512)
-            if not data.decode() == cachedata:
+        try:
+            while True:
+                data = sock.recv(256)
+                try:
+                    data = pickle.loads(data)
+                    if (data[0] == '::') or (data[0] == ';;'):
+                        textdata = data[1]
+                except:
+                    textdata = data.decode()
                 Log.config(state=NORMAL)
-                Log.insert(INSERT, data.decode()+"\n")
+                Log.insert(INSERT, textdata+"\n")
                 Log.config(state=DISABLED)
-            cachedata = str(data.decode())
-        #except:
-            #Log.config(state=NORMAL)
-            #Log.insert(INSERT, "Connection to server lost.\n")
-            #Log.config(state=DISABLED)
-            #cprint("Error! Connection to server lost.", 'red', attrs=['reverse'])
+                if type(data) == list:
+                    if data[0] == '::':
+                        indx = float(Log.index(INSERT)) - 1
+                        Log.tag_add("join", indx, Log.index(INSERT))
+                        Log.tag_config("join", background="#BFFFC0", foreground="black", justify="center")
+                    if data[0] == ';;':
+                        indx = float(Log.index(INSERT)) - 1
+                        Log.tag_add("leave", indx, Log.index(INSERT))
+                        Log.tag_config("leave", background="#FFBFBF", foreground="black", justify="center")
+        except:
+            print(traceback.format_exc())
+            Log.config(state=NORMAL)
+            Log.insert(INSERT, "Connection to server lost.\n")
+            Log.config(state=DISABLED)
+            cprint("Error! Connection to server lost.", 'red', attrs=['reverse'])
 
     t = threading.Thread(target=get_message, args=())
     t.daemon = True
@@ -332,11 +375,12 @@ def establish_conn():
     def send_message(var):
         try:
             global messageSend
-            message = "%s: %s" % (usr, messageSend.get())
-            message = message.replace('\n', ' ').replace('\r', ' ')
-            print(message)
-            messageSend.delete(0, END)
-            sock.sendto(message.encode('utf-8'), server_address)
+            if not messageSend.get() == '':
+                message = "%s: %s" % (usr, messageSend.get())
+                message = message.replace('\n', ' ').replace('\r', ' ')
+                print(message)
+                messageSend.delete(0, END)
+                sock.sendto(message.encode('utf-8'), server_address)
         except:
             cprint("Error! Message not sent.", 'red', attrs=['reverse'])
 
@@ -345,7 +389,7 @@ def establish_conn():
     def exitroot():
         confirm_exit = messagebox.askyesno(root, message="Are you sure you want to exit?")
         if confirm_exit:
-            sock.sendto(cc.encode('utf-8'), server_address)
+            sock.sendto(cc, server_address)
             exit_win(root)
             sys.exit()
 
