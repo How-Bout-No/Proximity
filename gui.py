@@ -89,9 +89,7 @@ def signin(event=None):
             else:
                 messagebox.showerror(init, message="Incorrect Username/Password")
         else:
-            err1 = messagebox.askquestion(init,
-                                          message="User '%s' does not exist.\nWould you like to create a new profile?" % (
-                                              usr))
+            err1 = messagebox.askquestion(init, message="User '%s' does not exist.\nWould you like to create a new profile?" % (usr))
             if err1 == "yes":
                 f = open("%s/_files/localuser.dat" % workdir, "w")
                 f.write("[user]\n")
@@ -119,11 +117,6 @@ login.grid(columnspan=3)
 init.bind('<Return>', signin)
 
 init.protocol('WM_DELETE_WINDOW', exitinit)
-
-if os.path.isfile("%s/_files/localuser.dat" % workdir):
-    config.read("%s/_files/localuser.dat" % workdir)
-    usr = config.get("user", "Username")
-    exit_win(init)
 
 init.mainloop()
 ################################################################################
@@ -337,6 +330,7 @@ def establish_conn():
                 Log.config(state=NORMAL)
                 Log.insert(INSERT, textdata + "\n")
                 Log.config(state=DISABLED)
+                Log.see(END)
                 if type(data) == list:
                     if data[0] == '::':
                         indx = float(Log.index(INSERT)) - 1
