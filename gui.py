@@ -11,25 +11,12 @@ import traceback
 from datetime import datetime
 import pickle
 from hashlib import sha256
+import shutil
 
 config = configparser.ConfigParser()
-print(os.getcwd())
 
 # Set directories
 workdir = os.getcwd()
-proxdir = os.path.expanduser('~/AppData/Local')
-usrdir = os.path.expanduser('~/Documents')
-if os.path.isdir(proxdir + "/.Proximity"):
-    proxdir = os.path.expanduser('~/AppData/Local/.Proximity')
-elif not os.path.isdir(proxdir + "/.Proximity"):
-    os.makedirs(proxdir + '/.Proximity')
-    proxdir = os.path.expanduser('~/AppData/Local/.Proximity')
-if os.path.isdir(usrdir + "/Proximity"):
-    usrdir = os.path.expanduser('~/Documents/Proximity')
-elif not os.path.isdir(usrdir + "/Proximity"):
-    os.makedirs(usrdir + '/Proximity')
-    usrdir = os.path.expanduser('~/Documents/Proximity')
-os.chdir(proxdir)
 print(os.getcwd())
 
 usr = None
@@ -90,8 +77,8 @@ def signin(event=None):
     if (usr == "" or pswrd == "" or " " in usr or " " in pswrd):
         messagebox.showerror(init, message="Invalid Username/Password")
     else:
-        if os.path.isfile("%s/_files/localuser.dat" % proxdir):
-            config.read("%s/_files/localuser.dat" % proxdir)
+        if os.path.isfile("%s/_files/localuser.dat" % workdir):
+            config.read("%s/_files/localuser.dat" % workdir)
             username = config.get("user", "Username")
             userpass = config.get("user", "Password")
             if sha256(usr.encode('utf-8')).hexdigest() == username:
@@ -106,7 +93,7 @@ def signin(event=None):
                                           message="User '%s' does not exist.\nWould you like to create a new profile?" % (
                                               usr))
             if err1 == "yes":
-                f = open("%s/_files/localuser.dat" % proxdir, "w")
+                f = open("%s/_files/localuser.dat" % workdir, "w")
                 f.write("[user]\n")
                 f.write("Username: %s\n" % sha256(usr.encode('utf-8')).hexdigest())
                 f.write("Password: %s\n" % sha256(pswrd.encode('utf-8')).hexdigest())
@@ -213,7 +200,6 @@ def server_host():
     def create_server():
         ipout = ip.get()
         portout = port.get()
-        os.chdir(proxdir)
         os.system("start %s/Server.exe %s %s" % (workdir, ipout, portout))
         exit_win(host_win)
 
