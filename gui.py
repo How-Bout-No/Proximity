@@ -345,6 +345,9 @@ def establish_conn():
             Log.config(state=NORMAL)
             Log.insert(INSERT, "Connection to server lost.\n")
             Log.config(state=DISABLED)
+            indx = float(Log.index(INSERT)) - 1
+            Log.tag_add("lost", indx, Log.index(INSERT))
+            Log.tag_config("lost", background="red", foreground="black", justify="center")
 
     t = threading.Thread(target=get_message, args=())
     t.daemon = True
