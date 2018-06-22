@@ -7,8 +7,14 @@ import traceback
 from datetime import datetime
 import pickle
 
-ip = sys.argv[1]
-port = sys.argv[2]
+if len(sys.argv) > 1:
+    ip = sys.argv[1]
+    port = sys.argv[2]
+    servername = sys.argv[3]
+else:
+    ip = '0.0.0.0'
+    port = 60501
+    servername = "Anonymous Server"
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server_address = (ip, int(port))
@@ -32,12 +38,12 @@ while True:
                 sock.sendto(pickle.dumps(lst), client)
                 print(data[1] + ' has joined the server')
         elif data[0] == '$cc':
-            clients.remove((chost, cip))
-            print(clients)
             for client in clients:
                 lst = [';;', str(data[1] + ' has left the server')]
                 sock.sendto(pickle.dumps(lst), client)
-                print(data[1] + ' has joined the server')
+                print(data[1] + ' has left the server')
+            clients.remove((chost, cip))
+            print(clients)
     except:
         data = data.decode()
         print(data)
