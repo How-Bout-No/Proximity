@@ -86,8 +86,10 @@ def signin(event=None):
                     exit_win(init)
                 else:
                     messagebox.showerror(init, message="Incorrect Username/Password")
+                    passinput.delete(0, END)
             else:
                 messagebox.showerror(init, message="Incorrect Username/Password")
+                passinput.delete(0, END)
         else:
             err1 = messagebox.askquestion(init, message="User '%s' does not exist.\nWould you like to create a new profile?" % (usr))
             if err1 == "yes":
@@ -191,9 +193,10 @@ def server_host():
     # init.overrideredirect(True)
 
     def create_server():
+        nameout = name.get()
         ipout = ip.get()
         portout = port.get()
-        os.system("start %s/Server.exe %s %s" % (workdir, ipout, portout))
+        os.system("start %s/Server.exe %s %s" % (workdir, ipout, portout, nameout))
         exit_win(host_win)
 
     def limit_input(*args):
@@ -242,8 +245,109 @@ def server_host():
     create_server.grid(columnspan=3)
 
 
-def options_win():
-    print("Yee")
+def options_pass():
+    global usr
+    host_win = Toplevel()
+    host_win.title("\n")
+    host_win.iconbitmap(workdir + "/_files/icon2.ico")
+
+    center(host_win, 100, 0, 0, 0)
+    host_win.resizable(False, False)
+
+    # init.overrideredirect(True)
+
+    def changepass():
+        value1 = oldpass.get()
+        value2 = new1pass.get()
+        value3 = new2pass.get()
+        config.read("%s/_files/localuser.dat" % workdir)
+        userpass = config.get("user", "Password")
+        if sha256(value1.encode('utf-8')).hexdigest() == userpass:
+            if value2 == value3:
+                if not value2 == value1:
+                    config["user"]["Password"] = sha256(value2.encode('utf-8')).hexdigest()
+                    with open(workdir+'/_files/localuser.dat', 'w') as configfile:
+                        config.write(configfile)
+                    messagebox.showinfo(init, message="Password Successfully Changed")
+                    exit_win(host_win)
+                else:
+                    messagebox.showerror(init, message="New Password Can't Be Your Old Password")
+            else:
+                messagebox.showerror(init, message="New Passwords Do Not Match")
+        else:
+            messagebox.showerror(init, message="Incorrect Password")
+
+
+    oldpass = StringVar()
+    new1pass = StringVar()
+    new2pass = StringVar()
+
+    oldlabel = Label(host_win, text="Old Password:")
+    new1label = Label(host_win, text="New Password:")
+    new2label = Label(host_win, text="New Password (Again):")
+    oldinput = Entry(host_win, show="•", textvariable=oldpass, width=20)
+    new1input = Entry(host_win, show="•", textvariable=new1pass, width=20)
+    new2input = Entry(host_win, show="•", textvariable=new2pass, width=20)
+
+    change_pass = Button(host_win, text="Change Password", command=changepass)
+
+    oldlabel.grid(row=1, sticky=W)
+    new1label.grid(row=2, sticky=W)
+    new2label.grid(row=3, sticky=W)
+
+    oldinput.grid(row=1, column=2, sticky=E)
+    new1input.grid(row=2, column=2, sticky=E)
+    new2input.grid(row=3, column=2, sticky=E)
+
+    change_pass.grid(columnspan=3)
+
+
+def options_user():
+    global usr
+    host_win = Toplevel()
+    host_win.title("\n")
+    host_win.iconbitmap(workdir + "/_files/icon2.ico")
+
+    center(host_win, 100, 0, 0, 0)
+    host_win.resizable(False, False)
+
+    # init.overrideredirect(True)
+
+    def changeuser():
+        value1 = olduser.get()
+        value2 = newuser.get()
+        config.read("%s/_files/localuser.dat" % workdir)
+        username = config.get("user", "Username")
+        if sha256(value1.encode('utf-8')).hexdigest() == username:
+            if not value2 == value1:
+                config["user"]["Username"] = sha256(value2.encode('utf-8')).hexdigest()
+                with open(workdir+'/_files/localuser.dat', 'w') as configfile:
+                    config.write(configfile)
+                    messagebox.showinfo(init, message="Username Successfully Changed")
+                exit_win(host_win)
+            else:
+                messagebox.showerror(init, message="New Username Can't Be Your Old Username")
+        else:
+            messagebox.showerror(init, message="Incorrect Username")
+
+
+    olduser = StringVar()
+    newuser = StringVar()
+
+    oldlabel = Label(host_win, text="Old Username:")
+    newlabel = Label(host_win, text="New Username:")
+    oldinput = Entry(host_win, textvariable=olduser, width=20)
+    newinput = Entry(host_win, textvariable=newuser, width=20)
+
+    change_user = Button(host_win, text="Change Username", command=changeuser)
+
+    oldlabel.grid(row=1, sticky=W)
+    newlabel.grid(row=2, sticky=W)
+
+    oldinput.grid(row=1, column=2, sticky=E)
+    newinput.grid(row=2, column=2, sticky=E)
+
+    change_user.grid(columnspan=3)
 
 
 toolbar = Frame(root)
@@ -263,17 +367,17 @@ server.menu.add_command(label="Host",
 
 server.pack(side=LEFT, padx=2, pady=2)
 
-# options = Menubutton(toolbar, text="Options", relief=RAISED)
-# options.menu = Menu(options, tearoff=0)
-# options["menu"] = options.menu
+options = Menubutton(toolbar, text="Options", relief=RAISED)
+options.menu = Menu(options, tearoff=0)
+options["menu"] = options.menu
 
-# option1 = IntVar()
-# option = IntVar()
+option1 = IntVar()
+option = IntVar()
 
-# options.menu.add_checkbutton(label="Connect", variable=option1)
-# options.menu.add_checkbutton(label="Host", variable=option)
+options.menu.add_command(label="Change Username", command=options_user)
+options.menu.add_command(label="Change Password", command=options_pass)
 
-# options.pack(side=RIGHT, padx=2, pady=2)
+options.pack(side=RIGHT, padx=2, pady=2)
 
 toolbar.pack(side=TOP, fill=X)
 
