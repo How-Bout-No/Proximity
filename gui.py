@@ -196,7 +196,7 @@ def server_host():
         nameout = name.get()
         ipout = ip.get()
         portout = port.get()
-        os.system("start %s/Server.exe %s %s" % (workdir, ipout, portout, nameout))
+        os.system("start %s/Server.exe %s %s %s" % (workdir, ipout, portout, nameout))
         exit_win(host_win)
 
     def limit_input(*args):
