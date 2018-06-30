@@ -1,23 +1,30 @@
-import os
-import sys
+import configparser
+import pickle
+import threading
+import traceback
+import winsound
+from hashlib import sha256
+from socket import *
 from tkinter import *
 from tkinter import messagebox
-import configparser
-import time
-import threading
-from socket import *
+from tkinter.font import Font
+
 from termcolor import *
-import traceback
-from datetime import datetime
-import pickle
-from hashlib import sha256
-import shutil
+
+from _files import img
 
 config = configparser.ConfigParser()
 
 # Set directories
 workdir = os.getcwd()
 print(os.getcwd())
+
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+
 
 usr = None
 
@@ -45,7 +52,7 @@ def exitinit():
 ######################################################
 init = Tk()
 init.title("\n")
-init.iconbitmap("%s/_files/icon2.ico" % workdir)
+init.iconbitmap(resource_path("_files\\icon2.ico"))
 
 center(init, 100, 0, 0, 0)
 init.resizable(False, False)
@@ -77,29 +84,52 @@ def signin(event=None):
     if (usr == "" or pswrd == "" or " " in usr or " " in pswrd):
         messagebox.showerror(init, message="Invalid Username/Password")
     else:
-        if os.path.isfile("%s/_files/localuser.dat" % workdir):
-            config.read("%s/_files/localuser.dat" % workdir)
-            username = config.get("user", "Username")
-            userpass = config.get("user", "Password")
-            if sha256(usr.encode('utf-8')).hexdigest() == username:
-                if sha256(pswrd.encode('utf-8')).hexdigest() == userpass:
-                    exit_win(init)
+        if os.path.isdir(workdir + "\\profile") and os.path.isfile(workdir + "\\profile\\localuser.dat") and (
+                os.stat(workdir + "\\profile\\localuser.dat").st_size != 0):
+            config.read(workdir + "\\profile\\localuser.dat")
+            for acc in config.sections():
+                if sha256(usr.encode('utf-8')).hexdigest() == config.get(acc, "Username"):
+                    if sha256(pswrd.encode('utf-8')).hexdigest() == config.get(acc, "Password"):
+                        exit_win(init)
+                    else:
+                        messagebox.showerror(init, message="Incorrect Password")
+                        passinput.delete(0, END)
                 else:
-                    messagebox.showerror(init, message="Incorrect Username/Password")
-                    passinput.delete(0, END)
-            else:
-                messagebox.showerror(init, message="Incorrect Username/Password")
-                passinput.delete(0, END)
+                    if messagebox.askquestion(init,
+                                              message=f"User '{usr}' does not exist.\nWould you like to create a new profile?") == "yes":
+                        if not os.path.isdir(workdir + "\\profile"):
+                            os.mkdir(workdir + "\\profile")
+                        if not os.path.isfile(workdir + "\\profile\\localuser.dat"):
+                            f = open(workdir + "\\profile\\localuser.dat", "w+")
+                            f.close()
+                        config.read(workdir + "\\profile\\localuser.dat")
+                        counter = 1
+                        while str(counter) in config.sections():
+                            counter += 1
+                        config[str(counter)] = {'Username': sha256(usr.encode('utf-8')).hexdigest(),
+                                                'Password': sha256(pswrd.encode('utf-8')).hexdigest()}
+                        with open(workdir + "\\profile\\localuser.dat", 'w') as configfile:
+                            config.write(configfile)
+                        exit_win(init)
         else:
-            err1 = messagebox.askquestion(init, message="User '%s' does not exist.\nWould you like to create a new profile?" % (usr))
-            if err1 == "yes":
-                f = open("%s/_files/localuser.dat" % workdir, "w")
-                f.write("[user]\n")
-                f.write("Username: %s\n" % sha256(usr.encode('utf-8')).hexdigest())
-                f.write("Password: %s\n" % sha256(pswrd.encode('utf-8')).hexdigest())
+            if messagebox.askquestion(init,
+                                      message=f"User '{usr}' does not exist.\nWould you like to create a new profile?") == "yes":
+                if not os.path.isdir(workdir + "\\profile"):
+                    os.mkdir(workdir + "\\profile")
+                if not os.path.isfile(workdir + "\\profile\\localuser.dat"):
+                    f = open(workdir + "\\profile\\localuser.dat", "w+")
+                    f.close()
+                config.read(workdir + "\\profile\\localuser.dat")
+                counter = 1
+                while str(counter) in config.sections():
+                    counter += 1
+                config[str(counter)] = {'Username': sha256(usr.encode('utf-8')).hexdigest(),
+                                        'Password': sha256(pswrd.encode('utf-8')).hexdigest()}
+                with open(workdir + "\\profile\\localuser.dat", 'w') as configfile:
+                    config.write(configfile)
                 exit_win(init)
     """
-    f = open("%s/_files/localuser.dat" % workdir, "a")
+    f = open("%s./_files/localuser.dat" % workdir, "a")
     f.write("[user]\n")
     f.write("Username: %s\n" % usr)
     exit_win(init)
@@ -124,7 +154,7 @@ init.mainloop()
 ################################################################################
 root = Tk()
 root.title("Proximity Chat")
-root.iconbitmap(workdir + "/_files/icon2.ico")
+root.iconbitmap(resource_path("_files\\icon2.ico"))
 
 
 def serverconn():
@@ -132,7 +162,7 @@ def serverconn():
     # print(Connect.get())
     host_win = Toplevel()
     host_win.title("\n")
-    host_win.iconbitmap(workdir + "/_files/icon2.ico")
+    host_win.iconbitmap(resource_path("_files\\icon2.ico"))
 
     center(host_win, 100, 0, 0, 0)
     host_win.resizable(False, False)
@@ -185,7 +215,7 @@ def server_host():
     global usr
     host_win = Toplevel()
     host_win.title("\n")
-    host_win.iconbitmap(workdir + "/_files/icon2.ico")
+    host_win.iconbitmap(resource_path("_files\\icon2.ico"))
 
     center(host_win, 100, 0, 0, 0)
     host_win.resizable(False, False)
@@ -249,7 +279,7 @@ def options_pass():
     global usr
     host_win = Toplevel()
     host_win.title("\n")
-    host_win.iconbitmap(workdir + "/_files/icon2.ico")
+    host_win.iconbitmap(resource_path("_files\\icon2.ico"))
 
     center(host_win, 100, 0, 0, 0)
     host_win.resizable(False, False)
@@ -260,13 +290,13 @@ def options_pass():
         value1 = oldpass.get()
         value2 = new1pass.get()
         value3 = new2pass.get()
-        config.read("%s/_files/localuser.dat" % workdir)
+        config.read(resource_path("_files\\localuser.dat"))
         userpass = config.get("user", "Password")
         if sha256(value1.encode('utf-8')).hexdigest() == userpass:
             if value2 == value3:
                 if not value2 == value1:
                     config["user"]["Password"] = sha256(value2.encode('utf-8')).hexdigest()
-                    with open(workdir+'/_files/localuser.dat', 'w') as configfile:
+                    with open(resource_path("_files\\localuser.dat"), 'w') as configfile:
                         config.write(configfile)
                     messagebox.showinfo(init, message="Password Successfully Changed")
                     exit_win(host_win)
@@ -276,7 +306,6 @@ def options_pass():
                 messagebox.showerror(init, message="New Passwords Do Not Match")
         else:
             messagebox.showerror(init, message="Incorrect Password")
-
 
     oldpass = StringVar()
     new1pass = StringVar()
@@ -306,7 +335,7 @@ def options_user():
     global usr
     host_win = Toplevel()
     host_win.title("\n")
-    host_win.iconbitmap(workdir + "/_files/icon2.ico")
+    host_win.iconbitmap(resource_path("_files\\icon2.ico"))
 
     center(host_win, 100, 0, 0, 0)
     host_win.resizable(False, False)
@@ -316,12 +345,12 @@ def options_user():
     def changeuser():
         value1 = olduser.get()
         value2 = newuser.get()
-        config.read("%s/_files/localuser.dat" % workdir)
+        config.read(resource_path("_files\\localuser.dat"))
         username = config.get("user", "Username")
         if sha256(value1.encode('utf-8')).hexdigest() == username:
             if not value2 == value1:
                 config["user"]["Username"] = sha256(value2.encode('utf-8')).hexdigest()
-                with open(workdir+'/_files/localuser.dat', 'w') as configfile:
+                with open(resource_path("_files\\localuser.dat"), 'w') as configfile:
                     config.write(configfile)
                     messagebox.showinfo(init, message="Username Successfully Changed")
                 exit_win(host_win)
@@ -329,7 +358,6 @@ def options_user():
                 messagebox.showerror(init, message="New Username Can't Be Your Old Username")
         else:
             messagebox.showerror(init, message="Incorrect Username")
-
 
     olduser = StringVar()
     newuser = StringVar()
@@ -350,9 +378,11 @@ def options_user():
     change_user.grid(columnspan=3)
 
 
+helv = Font(family="Helvetica", size="11")
+helvmen = Font(family="Helvetica", size="9")
 toolbar = Frame(root)
 
-server = Menubutton(toolbar, text="Server", relief=RAISED)
+server = Menubutton(toolbar, text="Server", font=helvmen, relief=RAISED)
 server.grid()
 server.menu = Menu(server, tearoff=0)
 server["menu"] = server.menu
@@ -360,45 +390,62 @@ server["menu"] = server.menu
 Connect = IntVar()
 Host = IntVar()
 
-server.menu.add_command(label="Connect",
+server.menu.add_command(label="Connect", font=helvmen,
                         command=serverconn)
-server.menu.add_command(label="Host",
+server.menu.add_command(label="Host", font=helvmen,
                         command=server_host)
 
 server.pack(side=LEFT, padx=2, pady=2)
 
-options = Menubutton(toolbar, text="Options", relief=RAISED)
+options = Menubutton(toolbar, text="Options", font=helvmen, relief=RAISED)
 options.menu = Menu(options, tearoff=0)
 options["menu"] = options.menu
 
 option1 = IntVar()
 option = IntVar()
+soundvar = IntVar()
+soundvar.set(1)
 
-options.menu.add_command(label="Change Username", command=options_user)
-options.menu.add_command(label="Change Password", command=options_pass)
+options.menu.add_command(label="Change Username", font=helvmen, command=options_user)
+options.menu.add_command(label="Change Password", font=helvmen, command=options_pass)
+options.menu.add_checkbutton(label="Sounds", font=helvmen, variable=soundvar, onvalue=1, offvalue=0)
 
 options.pack(side=RIGHT, padx=2, pady=2)
 
 toolbar.pack(side=TOP, fill=X)
 
-Log = Text(root, bg="WHITE", bd=3, height=29, width=122, state=DISABLED)
+SList = Listbox(root, bg="WHITE", bd=3, height=30, width=15, font=helv, selectmode=SINGLE)
+SList.pack(side=LEFT, fill=Y, pady=5, padx=5, anchor=W)
+
+def onselect(evt):
+    try:
+        w = evt.widget
+        index = int(w.curselection()[0])
+        value = w.get(index)
+        messageSend.insert(INSERT, f'@{value} ')  # Insert blank for user input
+        SList.selection_clear(0, END)
+    except IndexError:
+        pass
+
+SList.bind('<<ListboxSelect>>', onselect)
+
+Log = Text(root, bg="WHITE", bd=3, height=28, width=62, font=helv, state=DISABLED)
 Log.yview_scroll(1, "units")
-Log.pack(pady=5, padx=5, anchor=W)
+Log.pack(expand=1, fill=BOTH, pady=5, padx=5, anchor=W)
 
 msgSend = StringVar()
-messageSend = Entry(root, bd=3, width=163, textvariable=msgSend)
-messageSend.pack(pady=5, padx=5, anchor=W)
-
-
-def test():
-    print("Hello")
+messageSend = Entry(root, bd=3, width=103, font=helv, textvariable=msgSend)
+messageSend.pack(fill=X, pady=5, padx=5, anchor=W)
 
 
 # msg = messageSend.trace('w', test)
 
+
 def establish_conn():
+    global threadsrun
     global messageSend
     global server_address
+    threadsrun = True
     Log.config(state=NORMAL)
     sock = socket(AF_INET, SOCK_DGRAM)
     ip = ip_out
@@ -409,21 +456,53 @@ def establish_conn():
     cc = pickle.dumps(['$cc', usr])
     sock.sendto(inituser, server_address)
     Log.delete(1.0, END)
+
+    def disband_conn():
+        global threadsrun
+        sock.sendto(cc, server_address)
+        threadsrun = False
+        root.unbind("<Return>")
+        root.title("Proximity Chat")
+
+        Log.config(state=NORMAL)
+        Log.insert(INSERT, "You have left the server\n")
+        Log.config(state=DISABLED)
+        Log.see(END)
+        indx = float(Log.index(INSERT)) - 1
+        Log.tag_add("leave", indx, Log.index(INSERT))
+        Log.tag_config("leave", background="#FFBFBF", foreground="black", justify="center")
+        SList.delete(1, END)
+
+        server.menu.entryconfig(0, label="Connect", command=serverconn)
+
+    server.menu.entryconfig(0, label="Disconnect", command=disband_conn)
+
     print("Connecting to '%s' port '%s'" % server_address)
     sock.settimeout(15)
     try:
         sock.recv(256)
         Log.insert(INSERT, "Connected to '%s' port '%s'\n" % server_address)
+
+        indx = float(Log.index(INSERT)) - 1
+        Log.tag_add("conn", indx, Log.index(INSERT))
+        Log.tag_config("conn", background="#A3E3ED", foreground="black", justify="center")
     except Exception:
         print(traceback.format_exc())
         Log.insert(INSERT, "Connection failed!")
+
+        indx = float(Log.index(INSERT)) - 1
+        Log.tag_add("fail", indx, Log.index(INSERT))
+        Log.tag_config("fail", background="#FFBFBF", foreground="black", justify="center")
     finally:
         sock.settimeout(0)
         sock.setblocking(True)
 
     def get_message():
         try:
-            while True:
+            global threadsrun
+            global usr
+            global soundvar
+            while threadsrun == True:
                 data = sock.recv(256)
                 try:
                     data = pickle.loads(data)
@@ -431,19 +510,49 @@ def establish_conn():
                         textdata = data[1]
                 except:
                     textdata = data.decode()
+
+                def updicont(var):
+                    icon = img.updateicon()
+                    root.tk.call('wm', 'iconphoto', root._w, icon)
+
+                def updiconf(var):
+                    root.iconbitmap(resource_path("_files\\icon2.ico"))
+
+                root.bind("<FocusOut>", updicont)
+                root.bind("<FocusIn>", updiconf)
                 Log.config(state=NORMAL)
                 Log.insert(INSERT, textdata + "\n")
                 Log.config(state=DISABLED)
+                if soundvar.get() == 1:
+                    if '@' + usr in textdata:
+                        indx = float(Log.index(INSERT)) - 1
+                        Log.tag_add("mention", indx, Log.index(INSERT))
+                        Log.tag_config("mention", background="#FFDDAF", foreground="black")
+                        winsound.PlaySound(resource_path("_files\\mention.wav"),
+                                           winsound.SND_FILENAME | winsound.SND_ASYNC)
+                    else:
+                        try:
+                            winsound.PlaySound(resource_path("_files\\message.wav"),
+                                               winsound.SND_FILENAME | winsound.SND_ASYNC)
+                        except:
+                            print(traceback.format_exc())
                 Log.see(END)
                 if type(data) == list:
+                    root.title(str(data[3]) + " - " + str(len(data[2].split('\n'))) + " online")
                     if data[0] == '::':
                         indx = float(Log.index(INSERT)) - 1
                         Log.tag_add("join", indx, Log.index(INSERT))
                         Log.tag_config("join", background="#BFFFC0", foreground="black", justify="center")
+                        SList.delete(1, END)
+                        for x in data[2].split('\n'):
+                            SList.insert(END, x)
                     if data[0] == ';;':
                         indx = float(Log.index(INSERT)) - 1
                         Log.tag_add("leave", indx, Log.index(INSERT))
                         Log.tag_config("leave", background="#FFBFBF", foreground="black", justify="center")
+                        SList.delete(1, END)
+                        for x in data[2].split('\n'):
+                            SList.insert(END, x)
         except:
             print(traceback.format_exc())
             Log.config(state=NORMAL)
