@@ -1,21 +1,24 @@
 import configparser
+import json
 import pickle
 import threading
 import traceback
 import winsound
+from base64 import b64encode
 from hashlib import sha256
 from shutil import copyfile
 from socket import *
 from tkinter import *
 from tkinter import messagebox
 from tkinter.font import Font
+from urllib.request import *
 
 from termcolor import *
 
 from _files import img
 
 config = configparser.ConfigParser()
-
+ProximityVersion = "2.1.0"
 # Set directories
 workdir = os.getcwd()
 print(os.getcwd())
@@ -52,12 +55,107 @@ def exitinit():
 
 ######################################################
 
-if not len(sys.argv) > 1:
-    copyfile(resource_path("_files\\Updater.exe"), "./Updater.exe")
-    os.system("start Updater.exe")
-    sys.exit()
-if os.path.isfile("Updater.exe"):
-    os.remove("Updater.exe")
+update1 = Tk()
+update1.title("\n")
+update1.iconbitmap(resource_path("_files\\icon.ico"))
+
+center(update1, 80, 40, 0, 0)
+update1.resizable(False, False)
+
+# init.overrideredirect(True)
+
+updategif = resource_path("_files\\_update.gif")
+downloadgif = resource_path("_files\\_download.gif")
+
+framecount = 30
+
+framesupdate = [PhotoImage(file=updategif, format='gif -index %i' % (i)) for i in range(framecount)]
+framesdownload = [PhotoImage(file=downloadgif, format='gif -index %i' % (i)) for i in range(framecount)]
+
+
+def updateapp():
+    global setting, donevar
+    try:
+        if not len(sys.argv) > 1:
+            r = urlopen("https://api.github.com/repos/How-Bout-No/Proximity/releases/latest")
+            data = r.read()
+            encoding = r.info().get_content_charset('utf-8')
+            JSON_object = json.loads(data.decode(encoding))
+            if ProximityVersion < JSON_object['tag_name']:
+                setting = 1
+                if not os.path.isfile(JSON_object['assets'][0]['name']):
+                    urlretrieve(JSON_object['assets'][0]['browser_download_url'], JSON_object['assets'][0]['name'])
+
+                arg1 = b64encode(json.dumps(JSON_object).encode('utf-8')).decode('utf-8')
+
+                copyfile(resource_path("_files\\Updater.exe"), "./Updater.exe")
+                os.system(f"start Updater.exe {arg1}")
+                sys.exit()
+            else:
+                donevar = [True, True, False]
+        else:
+            if os.path.isfile("Updater.exe"):
+                os.remove("Updater.exe")
+            donevar = [True, True, False]
+    except:
+        donevar = [True, False, None]
+
+
+donevar = [False, None, None]
+setting = 0
+counter = 1
+
+
+def update(ind):
+    global counter, setting, donevar, t
+    ind = ind % framecount
+    if setting == 0:
+        frame = framesupdate[ind]
+    elif setting == 1:
+        message.config(text="Downloading update...")
+        frame = framesdownload[ind]
+    ind += 1
+    label.configure(image=frame)
+    update1.after(framecount, update, ind)
+    try:
+        if (counter > 10) or (counter == 0):
+            try:
+                t.isAlive()
+            except NameError:
+                counter = 0
+                t = threading.Thread(target=updateapp, args=())
+                t.daemon = False
+                t.start()
+                t.setName('checkforupdates')
+            finally:
+                if donevar[0] == True:
+                    if donevar[1] == True:
+                        if donevar[2] == True:
+                            donevar = [None, None, None]
+                            messagebox.showinfo(update1, message="Update success!")
+                        exit_win(update1)
+                    elif donevar[1] == False:
+                        donevar = [None, None, None]
+                        messagebox.showinfo(update1, message="Update failed!")
+                        exit_win(update1)
+                        sys.exit()
+
+    except NameError:
+        pass
+    finally:
+        if not counter == 0:
+            counter += 1
+
+
+helv = Font(family="Helvetica", size="10")
+message = Label(update1, text="Checking for updates...", font=helv)
+label = Label(update1)
+message.pack()
+label.pack(expand=YES, fill=BOTH)
+
+update1.after(0, update, 0)
+
+update1.mainloop()
 
 ######################################################
 init = Tk()
