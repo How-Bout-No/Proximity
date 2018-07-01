@@ -11,7 +11,7 @@ from tkinter.font import Font
 
 from termcolor import *
 
-from _files import img
+from _files import img, updater
 
 config = configparser.ConfigParser()
 
@@ -48,6 +48,10 @@ def exitinit():
         exit_win(init)
         sys.exit()
 
+
+######################################################
+
+updater.RunUpdateCheck()
 
 ######################################################
 init = Tk()
@@ -417,6 +421,7 @@ toolbar.pack(side=TOP, fill=X)
 SList = Listbox(root, bg="WHITE", bd=3, height=30, width=15, font=helv, selectmode=SINGLE)
 SList.pack(side=LEFT, fill=Y, pady=5, padx=5, anchor=W)
 
+
 def onselect(evt):
     try:
         w = evt.widget
@@ -426,6 +431,7 @@ def onselect(evt):
         SList.selection_clear(0, END)
     except IndexError:
         pass
+
 
 SList.bind('<<ListboxSelect>>', onselect)
 
@@ -442,9 +448,7 @@ messageSend.pack(fill=X, pady=5, padx=5, anchor=W)
 
 
 def establish_conn():
-    global threadsrun
-    global messageSend
-    global server_address
+    global threadsrun, messageSend, server_address
     threadsrun = True
     Log.config(state=NORMAL)
     sock = socket(AF_INET, SOCK_DGRAM)
@@ -499,9 +503,7 @@ def establish_conn():
 
     def get_message():
         try:
-            global threadsrun
-            global usr
-            global soundvar
+            global threadsrun, usr, soundvar
             while threadsrun == True:
                 data = sock.recv(256)
                 try:
