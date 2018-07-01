@@ -11,7 +11,7 @@ from tkinter.font import Font
 
 from termcolor import *
 
-from _files import img, updater
+from _files import img
 
 config = configparser.ConfigParser()
 
@@ -51,15 +51,17 @@ def exitinit():
 
 ######################################################
 
-updater.RunUpdateCheck()
+if not len(sys.argv) > 1:
+    os.system("start Updater.exe")
+    sys.exit()
 
 ######################################################
 init = Tk()
 init.title("\n")
-init.iconbitmap(resource_path("_files\\icon2.ico"))
 
 center(init, 100, 0, 0, 0)
 init.resizable(False, False)
+init.iconbitmap(resource_path("_files\\icon2.ico"))
 
 
 # init.overrideredirect(True)
