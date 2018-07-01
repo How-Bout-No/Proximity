@@ -106,6 +106,7 @@ def signin(event=None):
                     else:
                         messagebox.showerror(init, message="Incorrect Password")
                         passinput.delete(0, END)
+                        donevar = True
             if donevar == False:
                 if messagebox.askquestion(init,
                                           message=f"User '{usr}' does not exist.\nWould you like to create a new profile?") == "yes":
