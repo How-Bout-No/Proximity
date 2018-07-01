@@ -4,6 +4,7 @@ import threading
 import traceback
 import winsound
 from hashlib import sha256
+from shutil import copyfile
 from socket import *
 from tkinter import *
 from tkinter import messagebox
@@ -52,8 +53,11 @@ def exitinit():
 ######################################################
 
 if not len(sys.argv) > 1:
+    copyfile(resource_path("_files\\Updater.exe"), "./Updater.exe")
     os.system("start Updater.exe")
     sys.exit()
+if os.path.isfile("Updater.exe"):
+    os.remove("Updater.exe")
 
 ######################################################
 init = Tk()
@@ -61,7 +65,7 @@ init.title("\n")
 
 center(init, 100, 0, 0, 0)
 init.resizable(False, False)
-init.iconbitmap(resource_path("_files\\icon2.ico"))
+init.iconbitmap(resource_path("_files\\icon.ico"))
 
 
 # init.overrideredirect(True)
@@ -85,6 +89,7 @@ passinput = Entry(init, show="•", textvariable=p)
 
 def signin(event=None):
     global usr
+    donevar = False
     usr = u.get()  # Get username
     pswrd = p.get()  # Get password
     if (usr == "" or pswrd == "" or " " in usr or " " in pswrd):
@@ -96,27 +101,28 @@ def signin(event=None):
             for acc in config.sections():
                 if sha256(usr.encode('utf-8')).hexdigest() == config.get(acc, "Username"):
                     if sha256(pswrd.encode('utf-8')).hexdigest() == config.get(acc, "Password"):
+                        donevar = True
                         exit_win(init)
                     else:
                         messagebox.showerror(init, message="Incorrect Password")
                         passinput.delete(0, END)
-                else:
-                    if messagebox.askquestion(init,
-                                              message=f"User '{usr}' does not exist.\nWould you like to create a new profile?") == "yes":
-                        if not os.path.isdir(workdir + "\\profile"):
-                            os.mkdir(workdir + "\\profile")
-                        if not os.path.isfile(workdir + "\\profile\\localuser.dat"):
-                            f = open(workdir + "\\profile\\localuser.dat", "w+")
-                            f.close()
-                        config.read(workdir + "\\profile\\localuser.dat")
-                        counter = 1
-                        while str(counter) in config.sections():
-                            counter += 1
-                        config[str(counter)] = {'Username': sha256(usr.encode('utf-8')).hexdigest(),
-                                                'Password': sha256(pswrd.encode('utf-8')).hexdigest()}
-                        with open(workdir + "\\profile\\localuser.dat", 'w') as configfile:
-                            config.write(configfile)
-                        exit_win(init)
+            if donevar == False:
+                if messagebox.askquestion(init,
+                                          message=f"User '{usr}' does not exist.\nWould you like to create a new profile?") == "yes":
+                    if not os.path.isdir(workdir + "\\profile"):
+                        os.mkdir(workdir + "\\profile")
+                    if not os.path.isfile(workdir + "\\profile\\localuser.dat"):
+                        f = open(workdir + "\\profile\\localuser.dat", "w+")
+                        f.close()
+                    config.read(workdir + "\\profile\\localuser.dat")
+                    counter = 1
+                    while str(counter) in config.sections():
+                        counter += 1
+                    config[str(counter)] = {'Username': sha256(usr.encode('utf-8')).hexdigest(),
+                                            'Password': sha256(pswrd.encode('utf-8')).hexdigest()}
+                    with open(workdir + "\\profile\\localuser.dat", 'w') as configfile:
+                        config.write(configfile)
+                    exit_win(init)
         else:
             if messagebox.askquestion(init,
                                       message=f"User '{usr}' does not exist.\nWould you like to create a new profile?") == "yes":
@@ -160,7 +166,7 @@ init.mainloop()
 ################################################################################
 root = Tk()
 root.title("Proximity Chat")
-root.iconbitmap(resource_path("_files\\icon2.ico"))
+root.iconbitmap(resource_path("_files\\icon.ico"))
 
 
 def serverconn():
@@ -168,7 +174,7 @@ def serverconn():
     # print(Connect.get())
     host_win = Toplevel()
     host_win.title("\n")
-    host_win.iconbitmap(resource_path("_files\\icon2.ico"))
+    host_win.iconbitmap(resource_path("_files\\icon.ico"))
 
     center(host_win, 100, 0, 0, 0)
     host_win.resizable(False, False)
@@ -221,7 +227,7 @@ def server_host():
     global usr
     host_win = Toplevel()
     host_win.title("\n")
-    host_win.iconbitmap(resource_path("_files\\icon2.ico"))
+    host_win.iconbitmap(resource_path("_files\\icon.ico"))
 
     center(host_win, 100, 0, 0, 0)
     host_win.resizable(False, False)
@@ -285,7 +291,7 @@ def options_pass():
     global usr
     host_win = Toplevel()
     host_win.title("\n")
-    host_win.iconbitmap(resource_path("_files\\icon2.ico"))
+    host_win.iconbitmap(resource_path("_files\\icon.ico"))
 
     center(host_win, 100, 0, 0, 0)
     host_win.resizable(False, False)
@@ -293,24 +299,26 @@ def options_pass():
     # init.overrideredirect(True)
 
     def changepass():
+        donevar = False
         value1 = oldpass.get()
         value2 = new1pass.get()
         value3 = new2pass.get()
-        config.read(resource_path("_files\\localuser.dat"))
-        userpass = config.get("user", "Password")
-        if sha256(value1.encode('utf-8')).hexdigest() == userpass:
-            if value2 == value3:
-                if not value2 == value1:
-                    config["user"]["Password"] = sha256(value2.encode('utf-8')).hexdigest()
-                    with open(resource_path("_files\\localuser.dat"), 'w') as configfile:
-                        config.write(configfile)
-                    messagebox.showinfo(init, message="Password Successfully Changed")
-                    exit_win(host_win)
+        config.read(workdir + "\\profile\\localuser.dat")
+        for acc in config.sections():
+            if sha256(value1.encode('utf-8')).hexdigest() == config.get(acc, "Password"):
+                if value2 == value3:
+                    if not value2 == value1:
+                        config[acc]["Password"] = sha256(value2.encode('utf-8')).hexdigest()
+                        with open(workdir + "\\profile\\localuser.dat", 'w') as configfile:
+                            config.write(configfile)
+                        messagebox.showinfo(init, message="Password Successfully Changed")
+                        donevar = True
+                        exit_win(host_win)
+                    else:
+                        messagebox.showerror(init, message="New Password Can't Be Your Old Password")
                 else:
-                    messagebox.showerror(init, message="New Password Can't Be Your Old Password")
-            else:
-                messagebox.showerror(init, message="New Passwords Do Not Match")
-        else:
+                    messagebox.showerror(init, message="New Passwords Do Not Match")
+        if donevar == False:
             messagebox.showerror(init, message="Incorrect Password")
 
     oldpass = StringVar()
@@ -341,7 +349,7 @@ def options_user():
     global usr
     host_win = Toplevel()
     host_win.title("\n")
-    host_win.iconbitmap(resource_path("_files\\icon2.ico"))
+    host_win.iconbitmap(resource_path("_files\\icon.ico"))
 
     center(host_win, 100, 0, 0, 0)
     host_win.resizable(False, False)
@@ -349,20 +357,22 @@ def options_user():
     # init.overrideredirect(True)
 
     def changeuser():
+        donevar = False
         value1 = olduser.get()
         value2 = newuser.get()
-        config.read(resource_path("_files\\localuser.dat"))
-        username = config.get("user", "Username")
-        if sha256(value1.encode('utf-8')).hexdigest() == username:
-            if not value2 == value1:
-                config["user"]["Username"] = sha256(value2.encode('utf-8')).hexdigest()
-                with open(resource_path("_files\\localuser.dat"), 'w') as configfile:
-                    config.write(configfile)
-                    messagebox.showinfo(init, message="Username Successfully Changed")
-                exit_win(host_win)
-            else:
-                messagebox.showerror(init, message="New Username Can't Be Your Old Username")
-        else:
+        config.read(workdir + "\\profile\\localuser.dat")
+        for acc in config.sections():
+            if sha256(value1.encode('utf-8')).hexdigest() == config.get(acc, "Username"):
+                if not value2 == value1:
+                    config[acc]["Username"] = sha256(value2.encode('utf-8')).hexdigest()
+                    with open(workdir + "\\profile\\localuser.dat", 'w') as configfile:
+                        config.write(configfile)
+                        messagebox.showinfo(init, message="Username Successfully Changed")
+                    donevar = True
+                    exit_win(host_win)
+                else:
+                    messagebox.showerror(init, message="New Username Can't Be Your Old Username")
+        if donevar == False:
             messagebox.showerror(init, message="Incorrect Username")
 
     olduser = StringVar()
@@ -471,7 +481,7 @@ def establish_conn():
         root.title("Proximity Chat")
 
         Log.config(state=NORMAL)
-        Log.insert(INSERT, "You have left the server\n")
+        Log.insert(Log.index(INSERT), "You have left the server\n")
         Log.config(state=DISABLED)
         Log.see(END)
         indx = float(Log.index(INSERT)) - 1
@@ -487,14 +497,14 @@ def establish_conn():
     sock.settimeout(15)
     try:
         sock.recv(256)
-        Log.insert(INSERT, "Connected to '%s' port '%s'\n" % server_address)
+        Log.insert(Log.index(INSERT), "Connected to '%s' port '%s'\n" % server_address)
 
         indx = float(Log.index(INSERT)) - 1
         Log.tag_add("conn", indx, Log.index(INSERT))
         Log.tag_config("conn", background="#A3E3ED", foreground="black", justify="center")
     except Exception:
         print(traceback.format_exc())
-        Log.insert(INSERT, "Connection failed!")
+        Log.insert(Log.index(INSERT), "Connection failed!")
 
         indx = float(Log.index(INSERT)) - 1
         Log.tag_add("fail", indx, Log.index(INSERT))
@@ -515,17 +525,15 @@ def establish_conn():
                 except:
                     textdata = data.decode()
 
-                def updicont(var):
+                if root.focus_get() is None:
                     icon = img.updateicon()
                     root.tk.call('wm', 'iconphoto', root._w, icon)
+                else:
+                    icon = img.geticon()
+                    root.tk.call('wm', 'iconphoto', root._w, icon)
 
-                def updiconf(var):
-                    root.iconbitmap(resource_path("_files\\icon2.ico"))
-
-                root.bind("<FocusOut>", updicont)
-                root.bind("<FocusIn>", updiconf)
                 Log.config(state=NORMAL)
-                Log.insert(INSERT, textdata + "\n")
+                Log.insert(Log.index(INSERT), textdata + "\n")
                 Log.config(state=DISABLED)
                 if soundvar.get() == 1:
                     if '@' + usr in textdata:
@@ -547,20 +555,20 @@ def establish_conn():
                         indx = float(Log.index(INSERT)) - 1
                         Log.tag_add("join", indx, Log.index(INSERT))
                         Log.tag_config("join", background="#BFFFC0", foreground="black", justify="center")
-                        SList.delete(1, END)
+                        SList.delete(0, END)
                         for x in data[2].split('\n'):
                             SList.insert(END, x)
                     if data[0] == ';;':
                         indx = float(Log.index(INSERT)) - 1
                         Log.tag_add("leave", indx, Log.index(INSERT))
                         Log.tag_config("leave", background="#FFBFBF", foreground="black", justify="center")
-                        SList.delete(1, END)
+                        SList.delete(0, END)
                         for x in data[2].split('\n'):
                             SList.insert(END, x)
         except:
             print(traceback.format_exc())
             Log.config(state=NORMAL)
-            Log.insert(INSERT, "Connection to server lost.\n")
+            Log.insert(Log.index(INSERT), "Connection to server lost.\n")
             Log.config(state=DISABLED)
             indx = float(Log.index(INSERT)) - 1
             Log.tag_add("lost", indx, Log.index(INSERT))
@@ -583,19 +591,28 @@ def establish_conn():
         except:
             print(traceback.format_exc())
 
-    root.bind("<Return>", send_message)
-
-    def exitroot():
+    def exitroot1():
         confirm_exit = messagebox.askyesno(root, message="Are you sure you want to exit?")
         if confirm_exit:
             sock.sendto(cc, server_address)
             exit_win(root)
             sys.exit()
 
-    root.protocol('WM_DELETE_WINDOW', exitroot)
+    root.protocol('WM_DELETE_WINDOW', exitroot1)
+
+    root.bind("<Return>", send_message)
 
     Log.config(state=DISABLED)
 
+
+def exitroot():
+    confirm_exit = messagebox.askyesno(root, message="Are you sure you want to exit?")
+    if confirm_exit:
+        exit_win(root)
+        sys.exit()
+
+
+root.protocol('WM_DELETE_WINDOW', exitroot)
 
 center(root, 0, 0, 0, 0)
 
