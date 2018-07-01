@@ -6,7 +6,7 @@ import traceback
 if len(sys.argv) > 1:
     ip = sys.argv[1]
     port = sys.argv[2]
-    servername = sys.argv[3]
+    servername = sys.argv[3].replace(';', ' ')
 else:
     ip = '0.0.0.0'
     port = 60501
@@ -15,7 +15,7 @@ else:
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server_address = (ip, int(port))
 print("# Proximity Server v1.2.0\n")
-print("\nHosting server on '%s' port '%s'\n" % server_address)
+print(f"\nHosting '{servername}' on '%s' port '%s'\n" % server_address)
 sock.bind(server_address)
 
 clients = []

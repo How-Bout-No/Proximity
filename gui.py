@@ -230,7 +230,7 @@ def server_host():
         nameout = name.get()
         ipout = ip.get()
         portout = port.get()
-        os.system("start %s/Server.exe %s %s %s" % (workdir, ipout, portout, nameout))
+        os.system("start %s/Server.exe %s %s %s" % (workdir, ipout, portout, nameout.replace(' ', ';')))
         exit_win(host_win)
 
     def limit_input(*args):
@@ -262,7 +262,7 @@ def server_host():
     ipinput = Entry(host_win, textvariable=ip, width=20)
     portinput = Entry(host_win, textvariable=port, width=20)
 
-    nameinput.insert(0, "%s's Server" % usr)
+    nameinput.insert(0, f"{usr}'s Server")
     ipinput.insert(0, "0.0.0.0")
     portinput.insert(0, "60501")
 
