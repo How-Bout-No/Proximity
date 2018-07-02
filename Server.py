@@ -1,6 +1,7 @@
 import pickle
 import socket
 import sys
+import time
 import traceback
 
 if len(sys.argv) > 1:
@@ -14,9 +15,14 @@ else:
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server_address = (ip, int(port))
-print("# Proximity Server v1.2.0\n")
+print("# Proximity Server v1.2.1\n")
 print(f"\nHosting '{servername}' on '%s' port '%s'\n" % server_address)
-sock.bind(server_address)
+try:
+    sock.bind(server_address)
+except OSError:
+    print("\n\nError starting server!\n\nIs a server instance already running?")
+    time.sleep(5)
+    sys.exit()
 
 clients = []
 
