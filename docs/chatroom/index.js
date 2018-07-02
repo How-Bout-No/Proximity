@@ -54,7 +54,7 @@ if (http.Server && http.WebSocketServer) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  log('Proximity Chrome v0.0.1');
+  log('Proximity Browser v0.0.1\nPLACEHOLDER; THIS IS NOT A WORKING EXAMPLE');
 // FIXME: Wait for 1s so that HTTP Server socket is listening...
 setTimeout(function() {
   var address = isServer ? 'ws://localhost:' + port + '/' :
