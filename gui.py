@@ -14,11 +14,13 @@ from tkinter.font import Font
 from urllib.request import *
 
 from termcolor import *
+from win10toast import ToastNotifier
 
 from _files import img
 
+toaster = ToastNotifier()
 config = configparser.ConfigParser()
-ProximityVersion = "2.1.0"
+ProximityVersion = "2.2.2"
 # Set directories
 workdir = os.getcwd()
 print(os.getcwd())
@@ -124,7 +126,7 @@ def update(ind):
             except NameError:
                 counter = 0
                 t = threading.Thread(target=updateapp, args=())
-                t.daemon = False
+                t.daemon = True
                 t.start()
                 t.setName('checkforupdates')
             finally:
@@ -520,10 +522,13 @@ option1 = IntVar()
 option = IntVar()
 soundvar = IntVar()
 soundvar.set(1)
+notifvar = IntVar()
+notifvar.set(1)
 
 options.menu.add_command(label="Change Username", font=helvmen, command=options_user)
 options.menu.add_command(label="Change Password", font=helvmen, command=options_pass)
 options.menu.add_checkbutton(label="Sounds", font=helvmen, variable=soundvar, onvalue=1, offvalue=0)
+options.menu.add_checkbutton(label="Notifications", font=helvmen, variable=notifvar, onvalue=1, offvalue=0)
 
 options.pack(side=RIGHT, padx=2, pady=2)
 
@@ -603,7 +608,7 @@ def establish_conn():
         Log.tag_config("conn", background="#A3E3ED", foreground="black", justify="center")
     except Exception:
         print(traceback.format_exc())
-        Log.insert(Log.index(INSERT), "Connection failed!")
+        Log.insert(Log.index(INSERT), "Connection failed\n")
 
         indx = float(Log.index(INSERT)) - 1
         Log.tag_add("fail", indx, Log.index(INSERT))
@@ -613,9 +618,9 @@ def establish_conn():
         sock.setblocking(True)
 
     def get_message():
+        global threadsrun, usr, soundvar
         try:
-            global threadsrun, usr, soundvar
-            while threadsrun == True:
+            while threadsrun:
                 data = sock.recv(256)
                 try:
                     data = pickle.loads(data)
@@ -627,6 +632,13 @@ def establish_conn():
                 if root.focus_get() is None:
                     icon = img.updateicon()
                     root.tk.call('wm', 'iconphoto', root._w, icon)
+                    if notifvar.get() == 1:
+                        dta = textdata.split(': ')
+                        toaster.show_toast(dta[0],
+                                           ': '.join(dta[1:]),
+                                           icon_path=resource_path("_files\\icon.ico"),
+                                           duration=5,
+                                           threaded=True)
                 else:
                     icon = img.geticon()
                     root.tk.call('wm', 'iconphoto', root._w, icon)
