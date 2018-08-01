@@ -646,11 +646,12 @@ def establish_conn():
                 Log.config(state=NORMAL)
                 Log.insert(Log.index(INSERT), textdata + "\n")
                 Log.config(state=DISABLED)
+                if '@' + usr in textdata:
+                    indx = float(Log.index(INSERT)) - 1
+                    Log.tag_add("mention", indx, Log.index(INSERT))
+                    Log.tag_config("mention", background="#FFDDAF", foreground="black", underline=1)
                 if soundvar.get() == 1:
                     if '@' + usr in textdata:
-                        indx = float(Log.index(INSERT)) - 1
-                        Log.tag_add("mention", indx, Log.index(INSERT))
-                        Log.tag_config("mention", background="#FFDDAF", foreground="black")
                         winsound.PlaySound(resource_path("_files\\mention.wav"),
                                            winsound.SND_FILENAME | winsound.SND_ASYNC)
                     else:
@@ -659,6 +660,7 @@ def establish_conn():
                                                winsound.SND_FILENAME | winsound.SND_ASYNC)
                         except:
                             print(traceback.format_exc())
+
                 Log.see(END)
                 if type(data) == list:
                     root.title(str(data[3]) + " - " + str(len(data[2].split('\n'))) + " online")
