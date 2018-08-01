@@ -1,6 +1,6 @@
 # Proximity
 A Completely Open-Source Python Chatroom
-***
+
 ## Info
 Proximity is a chat program, which was recently completely overhauled to a brand new language, Python 3.6. It allows the user to connect to chat servers hosted by other users, either locally or over the internet.
 
