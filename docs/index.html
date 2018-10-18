@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Proximity</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+    <link href="https://stackpath.bootstrapcdn.com/bootswatch/4.1.3/flatly/bootstrap.min.css" rel="stylesheet" integrity="sha384-gJWVjz180MvwCrGGkC4xE5FjhWkTxHIR/+GgT8j2B3KKMgh6waEjPgzzh7lL7JZT" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.5.2/animate.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css">
+    <style>
+        @media only screen and (max-width: 900px) {
+            .mobile-hide {
+                display: none !important;
+            }
+            .mobile-show {
+                display: inline !important;
+            }
+        }
+    </style>
+	<script>
+	var OSName="Unknown OS";
+	if (navigator.appVersion.indexOf("Win")!=-1) OSName="Windows";
+	if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
+	if (navigator.appVersion.indexOf("X11")!=-1) OSName="UNIX";
+	if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
+
+	console.log('Your OS: '+OSName);
+	</script>
+</head>
+
+<body>
+    <div style="text-align:center">
+        <nav class="navbar navbar-dark bg-primary">
+        </nav>
+        </div>
+
+    </div>
+
+    <div class="container" style="text-align:center">
+        <h1 id="imagelogo" class="animated fadeInRight" style="padding-top:100px;">Proximity</h1>
+        <h1 class="animated fadeInLeft" style="padding-top:50px; font-size:150%;">A Completely Open-Source Python Chatroom For Windows</h1>
+    </div>
+
+
+
+    <div style="padding-top:25px;padding-bottom:25px;" />
+
+    <div class="container animated fadeInUpBig">
+        <div class="card border-dark mb-3" style="margin: 0;">
+            <div class="card-header mobile-hide" style="text-align: center"><a href="https://github.com/How-Bout-No/Proximity/releases/latest" class="btn btn-info btn-lg hvr-float-shadow">Download Latest Version&ensp;<span class="badge badge-primary">2.3.0</span></a>
+            </div>
+            <div class="card-header mobile-show" style="text-align: center; display: none">
+                <button class="btn btn-warning btn-lg">Visit This Site On A Computer
+                    <br/>To Download</button>
+            </div>
+            <div class="card-body mobile-hide">
+                <p class="card-text" style="text-align: left;">
+                    <ul style="font-size: 125%;">
+                        <li>Added "Long Load Detection"; the extension will ask if you want to disable it when it detects that websites are loading slowly</li>
+                        <br/>
+                        <li>Added ability to disable "Long Load Detection"</li>
+                        <br/>
+                        <li>Some other minor fixes</li>
+                    </ul>
+                </p>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="container" style="text-align:center; padding-top:50px;">
+        <div class="card border-info mb-3" style="margin: 0; font-size: 125%;">
+            <div class="card-header">Info</div>
+            <div class="card-body">
+                <p class="card-text">
+				Proximity is a chat program, which was recently completely overhauled to a brand new language, Python 3.6. It allows the user to connect to chat servers hosted by other users, either locally or over the internet.
+				<br/><br/>
+				The source is available to everyone, whether to be adjusted to one's needs or to supply any necessary information to those who need it.
+				<br/><br/>
+				The scripts are released as EXE's as to not require a full client-side installation of Python 3.6, in other words it just creates less hassle, and there's less things to handle or require.
+				<br/><br/>
+				Proximity works right out of the box, immediately prepared to a chat server that you supply it with.
+				</p>
+			</div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
