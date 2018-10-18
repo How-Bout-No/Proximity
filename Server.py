@@ -15,7 +15,7 @@ else:
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = (ip, int(port))
-print("# Proximity Server v1.2.1\n")
+print("# Proximity Server v1.3.0\n")
 print(f"\nHosting '{servername}' on '%s' port '%s'\n" % server_address)
 try:
     sock.bind(server_address)

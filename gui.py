@@ -20,7 +20,7 @@ from _files import img
 
 toaster = ToastNotifier()
 config = configparser.ConfigParser()
-ProximityVersion = "2.2.2"
+ProximityVersion = "2.3.0"
 # Set directories
 workdir = os.getcwd()
 print(os.getcwd())
