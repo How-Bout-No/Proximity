@@ -711,10 +711,12 @@ def establish_conn():
     def exitroot1():
         confirm_exit = messagebox.askyesno(root, message="Are you sure you want to exit?")
         if confirm_exit:
-            sock.close()
-            #sock.sendto(cc, server_address)
-            exit_win(root)
-            sys.exit()
+            threadsrun = False
+            sock.send(cc)
+            data = sock.recv(128)
+            if data.decode() == 'final':
+                exit_win(root)
+                sys.exit()
 
     root.protocol('WM_DELETE_WINDOW', exitroot1)
 
