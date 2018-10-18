@@ -1,8 +1,8 @@
 import pickle
 import socket
 import sys
+import threading
 import time
-import traceback
 
 if len(sys.argv) > 1:
     ip = sys.argv[1]
@@ -13,49 +13,63 @@ else:
     port = 60501
     servername = "Anonymous Server"
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = (ip, int(port))
 print("# Proximity Server v1.2.1\n")
 print(f"\nHosting '{servername}' on '%s' port '%s'\n" % server_address)
 try:
     sock.bind(server_address)
 except OSError:
-    print("\n\nError starting server!\n\nIs a server instance already running?")
+    print("\n\nError starting server!\nIs a server instance already running?")
     time.sleep(5)
     sys.exit()
 
-clients = []
+clients = {}
+connections = []
+
+sock.listen(10)
+
+
+def get_new(conn, addr):
+    global clients
+    while not conn._closed:
+        data = conn.recv(256)
+        try:
+            pickle.loads(data)
+        except:
+            data = data.decode()
+            print(data)
+            data = data.encode('utf-8')
+            for conne in connections:
+                conne[0].sendall(data)
+        else:
+            if (conn, addr) in connections:
+                connections.remove((conn, addr))
+            for x in connections:
+                lst = [';;', str(clients[conn[1]] + ' has left the server'),
+                       '\n'.join(clients[c[1]] for c in connections),
+                       servername]
+                conn[0].send(pickle.dumps(lst))
+            print(clients[addr] + ' has left the server')
+            try:
+                clients[addr]
+            except:
+                pass
+            else:
+                del clients[addr]
+            conn.close()
+
 
 while True:
-    data, addr = sock.recvfrom(256)
-    chost, cip = addr
-    try:
-        data = pickle.loads(data)
-        try:
-            if data[0] == '$inituser':
-                sock.sendto(pickle.dumps(data), addr)
-                clients.append([(chost, cip), data[1]])
-                print(clients)
-                for client in clients:
-                    lst = ['::', str(data[1] + ' has joined the server'), '\n'.join(c[1] for c in clients), servername]
-                    sock.sendto(pickle.dumps(lst), client[0])
-                    print(data[1] + ' has joined the server')
-            elif data[0] == '$cc':
-                print([(chost, cip), data[1]])
-                clients.remove([(chost, cip), data[1]])
-                print(clients)
-                for client in clients:
-                    lst = [';;', str(data[1] + ' has left the server'), '\n'.join(c[1] for c in clients), servername]
-                    sock.sendto(pickle.dumps(lst), client[0])
-                    print(data[1] + ' has left the server')
-        except:
-            pass
-    except:
-        data = data.decode()
-        print(data)
-        data = data.encode('utf-8')
-        for client in clients:
-            try:
-                sock.sendto(data, client[0])
-            except:
-                print(traceback.format_exc())
+    connection, addr = sock.accept()
+    data = connection.recv(256)
+    init = pickle.loads(data)
+    connections.append((connection, addr))
+    for conn in connections:
+        clients[conn[1]] = init[1]
+    for conn in connections:
+        print(clients)
+        lst = ['::', str(init[1] + ' has joined the server'), '\n'.join(clients[c[1]] for c in connections), servername]
+        conn[0].send(pickle.dumps(lst))
+        print(init[1] + ' has joined the server')
+    threading.Thread(target=get_new, args=(connection, addr)).start()

@@ -337,8 +337,12 @@ def server_host():
 
     def create_server():
         nameout = name.get()
-        ipout = ip.get()
         portout = port.get()
+        ipout = ip.get()
+        if ipout:
+            ipout = '127.0.0.1'
+        else:
+            ipout = '0.0.0.0'
         os.system("start %s/Server.exe %s %s %s" % (workdir, ipout, portout, nameout.replace(' ', ';')))
         exit_win(host_win)
 
@@ -347,11 +351,6 @@ def server_host():
         if len(value) > 30:
             name.set(value[:30])
 
-    def limit_input1(*args):
-        value = ip.get()
-        if len(value) > 20:
-            ip.set(value[:20])
-
     def limit_input2(*args):
         value = port.get()
         if len(value) > 5:
@@ -359,31 +358,31 @@ def server_host():
 
     name = StringVar()
     name.trace('w', limit_input)
-    ip = StringVar()
-    ip.trace('w', limit_input1)
     port = StringVar()
     port.trace('w', limit_input2)
+    ip = IntVar()
 
     namelabel = Label(host_win, text="Server Name:")
-    iplabel = Label(host_win, text="Server IP:")
     portlabel = Label(host_win, text="Server Port:")
+    iplabel = Label(host_win, text="LAN?")
     nameinput = Entry(host_win, textvariable=name, width=20)
-    ipinput = Entry(host_win, textvariable=ip, width=20)
     portinput = Entry(host_win, textvariable=port, width=20)
+    # ipinput = Entry(host_win, textvariable=ip, width=20)
+    ipinput = Checkbutton(host_win, variable=ip)
 
     nameinput.insert(0, f"{usr}'s Server")
-    ipinput.insert(0, "0.0.0.0")
     portinput.insert(0, "60501")
+    ip.set(1)
 
     create_server = Button(host_win, text="Create Server", command=create_server)
 
-    namelabel.grid(row=1, sticky=W)
-    iplabel.grid(row=2, sticky=W)
-    portlabel.grid(row=3, sticky=W)
+    namelabel.grid(row=1, sticky=E)
+    portlabel.grid(row=2, sticky=E)
+    iplabel.grid(row=3, sticky=E)
 
-    nameinput.grid(row=1, column=2, sticky=E)
-    ipinput.grid(row=2, column=2, sticky=E)
-    portinput.grid(row=3, column=2, sticky=E)
+    nameinput.grid(row=1, column=2, sticky=W)
+    portinput.grid(row=2, column=2, sticky=W)
+    ipinput.grid(row=3, column=2, sticky=W)
 
     create_server.grid(columnspan=3)
 
@@ -567,22 +566,23 @@ def establish_conn():
     global threadsrun, messageSend, server_address
     threadsrun = True
     Log.config(state=NORMAL)
-    sock = socket(AF_INET, SOCK_DGRAM)
+    sock = socket(AF_INET, SOCK_STREAM)
     ip = ip_out
     port = int(port_out)
     server_address = (ip, port)
     print(server_address)
     inituser = pickle.dumps(['$inituser', usr])
     cc = pickle.dumps(['$cc', usr])
-    sock.sendto(inituser, server_address)
+    #sock.sendto(inituser, server_address)
     Log.delete(1.0, END)
 
     def disband_conn():
         global threadsrun
-        sock.sendto(cc, server_address)
         threadsrun = False
         root.unbind("<Return>")
         root.title("Proximity Chat")
+
+        sock.send(cc)
 
         Log.config(state=NORMAL)
         Log.insert(Log.index(INSERT), "You have left the server\n")
@@ -595,17 +595,19 @@ def establish_conn():
 
         server.menu.entryconfig(0, label="Connect", command=serverconn)
 
+
     server.menu.entryconfig(0, label="Disconnect", command=disband_conn)
 
     print("Connecting to '%s' port '%s'" % server_address)
     sock.settimeout(15)
     try:
-        sock.recv(256)
+        sock.connect(server_address)
         Log.insert(Log.index(INSERT), "Connected to '%s' port '%s'\n" % server_address)
 
         indx = float(Log.index(INSERT)) - 1
         Log.tag_add("conn", indx, Log.index(INSERT))
         Log.tag_config("conn", background="#A3E3ED", foreground="black", justify="center")
+        sock.sendall(inituser)
     except Exception:
         print(traceback.format_exc())
         Log.insert(Log.index(INSERT), "Connection failed\n")
@@ -613,6 +615,7 @@ def establish_conn():
         indx = float(Log.index(INSERT)) - 1
         Log.tag_add("fail", indx, Log.index(INSERT))
         Log.tag_config("fail", background="#FFBFBF", foreground="black", justify="center")
+        return
     finally:
         sock.settimeout(0)
         sock.setblocking(True)
@@ -621,7 +624,10 @@ def establish_conn():
         global threadsrun, usr, soundvar
         try:
             while threadsrun:
-                data = sock.recv(256)
+                try:
+                    data = sock.recv(256)
+                except:
+                    break
                 try:
                     data = pickle.loads(data)
                     if (data[0] == '::') or (data[0] == ';;'):
@@ -679,6 +685,7 @@ def establish_conn():
                         for x in data[2].split('\n'):
                             SList.insert(END, x)
         except:
+            sock.close()
             print(traceback.format_exc())
             Log.config(state=NORMAL)
             Log.insert(Log.index(INSERT), "Connection to server lost.\n")
@@ -687,10 +694,7 @@ def establish_conn():
             Log.tag_add("lost", indx, Log.index(INSERT))
             Log.tag_config("lost", background="red", foreground="black", justify="center")
 
-    t = threading.Thread(target=get_message, args=())
-    t.daemon = True
-    t.start()
-    t.setName('getMsg')
+    threading.Thread(target=get_message, args=()).start()
 
     def send_message(var):
         try:
@@ -700,14 +704,15 @@ def establish_conn():
                 message = message.replace('\n', ' ').replace('\r', ' ')
                 print(message)
                 messageSend.delete(0, END)
-                sock.sendto(message.encode('utf-8'), server_address)
+                sock.send(message.encode('utf-8'))
         except:
             print(traceback.format_exc())
 
     def exitroot1():
         confirm_exit = messagebox.askyesno(root, message="Are you sure you want to exit?")
         if confirm_exit:
-            sock.sendto(cc, server_address)
+            sock.close()
+            #sock.sendto(cc, server_address)
             exit_win(root)
             sys.exit()
 
