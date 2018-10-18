@@ -57,8 +57,8 @@ def get_new(conn, addr):
                 pass
             else:
                 del clients[addr]
-            conn.sendall('final'.encode('utf-8'))
-            conn.sendall('final'.encode('utf-8'))
+            conn.sendall(pickle.dumps(['$']))
+            conn.sendall(pickle.dumps(['$']))
             conn.close()
 
 

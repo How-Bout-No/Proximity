@@ -635,55 +635,59 @@ def establish_conn():
                 except:
                     textdata = data.decode()
 
-                if root.focus_get() is None:
-                    icon = img.updateicon()
-                    root.tk.call('wm', 'iconphoto', root._w, icon)
-                    if notifvar.get() == 1:
-                        dta = textdata.split(': ')
-                        toaster.show_toast(dta[0],
-                                           ': '.join(dta[1:]),
-                                           icon_path=resource_path("_files\\icon.ico"),
-                                           duration=5,
-                                           threaded=True)
-                else:
-                    icon = img.geticon()
-                    root.tk.call('wm', 'iconphoto', root._w, icon)
+                try:
+                    if data[0] != '$':
+                        if root.focus_get() is None:
+                            icon = img.updateicon()
+                            root.tk.call('wm', 'iconphoto', root._w, icon)
+                            if notifvar.get() == 1:
+                                dta = textdata.split(': ')
+                                toaster.show_toast(dta[0],
+                                                   ': '.join(dta[1:]),
+                                                   icon_path=resource_path("_files\\icon.ico"),
+                                                   duration=5,
+                                                   threaded=True)
+                        else:
+                            icon = img.geticon()
+                            root.tk.call('wm', 'iconphoto', root._w, icon)
 
-                Log.config(state=NORMAL)
-                Log.insert(Log.index(INSERT), textdata + "\n")
-                Log.config(state=DISABLED)
-                if '@' + usr in textdata:
-                    indx = float(Log.index(INSERT)) - 1
-                    Log.tag_add("mention", indx, Log.index(INSERT))
-                    Log.tag_config("mention", background="#FFDDAF", foreground="black", underline=1)
-                if soundvar.get() == 1:
-                    if '@' + usr in textdata:
-                        winsound.PlaySound(resource_path("_files\\mention.wav"),
-                                           winsound.SND_FILENAME | winsound.SND_ASYNC)
-                    else:
-                        try:
-                            winsound.PlaySound(resource_path("_files\\message.wav"),
-                                               winsound.SND_FILENAME | winsound.SND_ASYNC)
-                        except:
-                            print(traceback.format_exc())
+                        Log.config(state=NORMAL)
+                        Log.insert(Log.index(INSERT), textdata + "\n")
+                        Log.config(state=DISABLED)
+                        if '@' + usr in textdata:
+                            indx = float(Log.index(INSERT)) - 1
+                            Log.tag_add("mention", indx, Log.index(INSERT))
+                            Log.tag_config("mention", background="#FFDDAF", foreground="black", underline=1)
+                        if soundvar.get() == 1:
+                            if '@' + usr in textdata:
+                                winsound.PlaySound(resource_path("_files\\mention.wav"),
+                                                   winsound.SND_FILENAME | winsound.SND_ASYNC)
+                            else:
+                                try:
+                                    winsound.PlaySound(resource_path("_files\\message.wav"),
+                                                       winsound.SND_FILENAME | winsound.SND_ASYNC)
+                                except:
+                                    print(traceback.format_exc())
 
-                Log.see(END)
-                if type(data) == list:
-                    root.title(str(data[3]) + " - " + str(len(data[2].split('\n'))) + " online")
-                    if data[0] == '::':
-                        indx = float(Log.index(INSERT)) - 1
-                        Log.tag_add("join", indx, Log.index(INSERT))
-                        Log.tag_config("join", background="#BFFFC0", foreground="black", justify="center")
-                        SList.delete(0, END)
-                        for x in data[2].split('\n'):
-                            SList.insert(END, x)
-                    if data[0] == ';;':
-                        indx = float(Log.index(INSERT)) - 1
-                        Log.tag_add("leave", indx, Log.index(INSERT))
-                        Log.tag_config("leave", background="#FFBFBF", foreground="black", justify="center")
-                        SList.delete(0, END)
-                        for x in data[2].split('\n'):
-                            SList.insert(END, x)
+                        Log.see(END)
+                        if type(data) == list:
+                            root.title(str(data[3]) + " - " + str(len(data[2].split('\n'))) + " online")
+                            if data[0] == '::':
+                                indx = float(Log.index(INSERT)) - 1
+                                Log.tag_add("join", indx, Log.index(INSERT))
+                                Log.tag_config("join", background="#BFFFC0", foreground="black", justify="center")
+                                SList.delete(0, END)
+                                for x in data[2].split('\n'):
+                                    SList.insert(END, x)
+                            if data[0] == ';;':
+                                indx = float(Log.index(INSERT)) - 1
+                                Log.tag_add("leave", indx, Log.index(INSERT))
+                                Log.tag_config("leave", background="#FFBFBF", foreground="black", justify="center")
+                                SList.delete(0, END)
+                                for x in data[2].split('\n'):
+                                    SList.insert(END, x)
+                except:
+                    pass
         except:
             sock.close()
             print(traceback.format_exc())
@@ -709,12 +713,14 @@ def establish_conn():
             print(traceback.format_exc())
 
     def exitroot1():
+        global threadsrun
         confirm_exit = messagebox.askyesno(root, message="Are you sure you want to exit?")
         if confirm_exit:
             threadsrun = False
             sock.send(cc)
             data = sock.recv(128)
-            if data.decode() == 'final':
+            data = pickle.loads(data)
+            if data[0] == '$':
                 exit_win(root)
                 sys.exit()
 
