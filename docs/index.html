@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
     <link href="https://stackpath.bootstrapcdn.com/bootswatch/4.1.3/flatly/bootstrap.min.css" rel="stylesheet" integrity="sha384-gJWVjz180MvwCrGGkC4xE5FjhWkTxHIR/+GgT8j2B3KKMgh6waEjPgzzh7lL7JZT" crossorigin="anonymous">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.5.2/animate.min.css">
@@ -22,15 +22,6 @@
             }
         }
     </style>
-	<script>
-	var OSName="Unknown OS";
-	if (navigator.appVersion.indexOf("Win")!=-1) OSName="Windows";
-	if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
-	if (navigator.appVersion.indexOf("X11")!=-1) OSName="UNIX";
-	if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
-
-	console.log('Your OS: '+OSName);
-	</script>
 </head>
 
 <body>
@@ -67,7 +58,11 @@
 
     <div class="container animated fadeInUpBig">
         <div class="card border-dark mb-3" style="margin: 0;">
-            <div class="card-header mobile-hide" style="text-align: center"><a href="https://github.com/How-Bout-No/Proximity/releases/latest" class="btn btn-info btn-lg hvr-float-shadow">Download Latest Version&ensp;<span class="badge badge-primary">2.3.0</span></a>
+            <div class="card-header mobile-hide os-show" style="text-align: center"><a href="https://github.com/How-Bout-No/Proximity/releases/latest" class="btn btn-info btn-lg hvr-float-shadow">Download Latest Version&ensp;<span class="badge badge-primary">2.3.0</span></a>
+            </div>
+            <div class="card-header os-hide" style="text-align: center;">
+                <button class="btn btn-danger btn-lg">Currently Only Supports
+                    <br/>Windows</button>
             </div>
             <div class="card-header mobile-show" style="text-align: center; display: none">
                 <button class="btn btn-warning btn-lg">Visit This Site On A Computer
@@ -106,5 +101,23 @@
     </div>
 
 </body>
+
+<script>
+	var OSName="Unknown OS";
+	if (navigator.appVersion.indexOf("Win")!=-1) OSName="Windows";
+	if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
+	if (navigator.appVersion.indexOf("X11")!=-1) OSName="UNIX";
+	if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
+
+	console.log('Your OS: '+OSName);
+
+	console.log(OSName != "Windows");
+
+	if (OSName != "Windows") {
+	    $('.os-show').css("display", "none");
+ 	} else {
+	    $('.os-hide').css("display", "none");
+	}
+</script>
 
 </html>
