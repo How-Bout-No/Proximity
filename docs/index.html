@@ -8,13 +8,16 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
     <link href="https://stackpath.bootstrapcdn.com/bootswatch/4.1.3/flatly/bootstrap.min.css" rel="stylesheet" integrity="sha384-gJWVjz180MvwCrGGkC4xE5FjhWkTxHIR/+GgT8j2B3KKMgh6waEjPgzzh7lL7JZT" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.5.2/animate.min.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css">
     <style>
         @media only screen and (max-width: 900px) {
             .mobile-hide {
+                display: none !important;
+            }
+            .os-hide {
                 display: none !important;
             }
             .mobile-show {
@@ -33,13 +36,13 @@
             <div class="navbar-collapse collapse" id="navbar" style="">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item">
-                        <a class="nav-link" style="padding-left:40px;" href="https://how-bout-no.github.io/projects/"><i class="fas fa-home"></i>&ensp;Home</a>
+                        <a class="nav-link" style="padding-right:20px;" href="https://how-bout-no.github.io/projects/"><i class="fas fa-home"></i>&ensp;Home</a>
                     </li>
 					<li class="nav-item">
-                        <a class="nav-link" style="padding-left:40px;" href="https://how-bout-no.github.io/projects/web-bypass"><i class="fas fa-ban"></i>&ensp;Web Bypass</a>
+                        <a class="nav-link" style="padding-left:20px; padding-right:20px;" href="https://how-bout-no.github.io/projects/web-bypass"><i class="fas fa-ban"></i>&ensp;Web Bypass</a>
                     </li>
 					<li class="nav-item active">
-                        <a class="nav-link" href="#" style="padding-left:40px;"><i class="fas fa-comments"></i>&ensp;Proximity <span class="sr-only">(current)</span></a>
+                        <a class="nav-link" href="#" style="padding-left:20px; padding-right:20px;"><i class="fas fa-comments"></i>&ensp;Proximity <span class="sr-only">(current)</span></a>
                     </li>
                 </ul>
         </nav>
@@ -58,7 +61,7 @@
 
     <div class="container animated fadeInUpBig">
         <div class="card border-dark mb-3" style="margin: 0;">
-            <div class="card-header mobile-hide os-show" style="text-align: center"><a href="https://github.com/How-Bout-No/Proximity/releases/latest" class="btn btn-info btn-lg hvr-float-shadow">Download Latest Version&ensp;<span class="badge badge-primary">2.3.0</span></a>
+            <div class="card-header mobile-hide os-show" style="text-align: center"><a href="https://github.com/How-Bout-No/Proximity/releases/latest" class="btn btn-info btn-lg hvr-float-shadow">Download Latest Version&ensp;<span class="badge badge-primary" id="ver"></span></a>
             </div>
             <div class="card-header os-hide" style="text-align: center;">
                 <button class="btn btn-danger btn-lg">Currently Only Supports
@@ -110,14 +113,24 @@
 	if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
 
 	console.log('Your OS: '+OSName);
-
-	console.log(OSName != "Windows");
-
-	if (OSName != "Windows") {
-	    $('.os-show').css("display", "none");
- 	} else {
-	    $('.os-hide').css("display", "none");
-	}
+  
+  if (OSName != "Windows") {
+      $('.os-show').css("display", "none");
+  } else {
+      $('.os-hide').css("display", "none");
+  }
+  
+  
+  $( document ).ready(function() {
+			$.ajax({
+				type    : "GET",
+				dataType: "json",
+				url     : ("https://api.github.com/repos/how-bout-no/Proximity/releases/latest"),
+				success: function(data) {
+          $('#ver').text(data["tag_name"]);
+				}
+			}); //ajax
+		}); // ready
 </script>
 
 </html>
