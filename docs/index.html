@@ -124,7 +124,7 @@
 			url     : ("https://api.github.com/repos/how-bout-no/Proximity/releases/latest"),
 			success: function(data) {
 				$('#ver').text(data["tag_name"]);
-				var text = data["body"],
+				var text = data["body"].replace("\n", "\n\n"),
 				converter = new showdown.Converter(),
 				inhtml = converter.makeHtml(text);
 				$('#changelog').html(inhtml);
