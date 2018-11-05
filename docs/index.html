@@ -126,8 +126,8 @@
 				$('#ver').text(data["tag_name"]);
 				var text = data["body"],
 				converter = new showdown.Converter(),
-				html = converter.makeHtml(text);
-				$('#changelog').html(data["tag_name"]);
+				inhtml = converter.makeHtml(text);
+				$('#changelog').html(inhtml);
 			}
 		}); //ajax
 	}); // ready
