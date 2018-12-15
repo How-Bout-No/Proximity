@@ -20,7 +20,7 @@ from _files import img
 
 toaster = ToastNotifier()
 config = configparser.ConfigParser()
-ProximityVersion = "2.3.0"
+ProximityVersion = "2.4.0"
 # Set directories
 workdir = os.getcwd()
 print(os.getcwd())
@@ -78,7 +78,7 @@ framesdownload = [PhotoImage(file=downloadgif, format='gif -index %i' % (i)) for
 def updateapp():
     global setting, donevar
     try:
-        if not len(sys.argv) > 1:
+        if not '--no-update' in sys.argv:
             r = urlopen("https://api.github.com/repos/How-Bout-No/Proximity/releases/latest")
             data = r.read()
             encoding = r.info().get_content_charset('utf-8')
@@ -573,7 +573,7 @@ def establish_conn():
     print(server_address)
     inituser = pickle.dumps(['$inituser', usr])
     cc = pickle.dumps(['$cc', usr])
-    #sock.sendto(inituser, server_address)
+    # sock.sendto(inituser, server_address)
     Log.delete(1.0, END)
 
     def disband_conn():
@@ -594,7 +594,6 @@ def establish_conn():
         SList.delete(1, END)
 
         server.menu.entryconfig(0, label="Connect", command=serverconn)
-
 
     server.menu.entryconfig(0, label="Disconnect", command=disband_conn)
 
@@ -654,12 +653,13 @@ def establish_conn():
                         Log.config(state=NORMAL)
                         Log.insert(Log.index(INSERT), textdata + "\n")
                         Log.config(state=DISABLED)
-                        if '@' + usr in textdata:
+                        search = re.search(r'@{0}($|\s)+'.format(usr), textdata, re.IGNORECASE)
+                        if search:
                             indx = float(Log.index(INSERT)) - 1
                             Log.tag_add("mention", indx, Log.index(INSERT))
                             Log.tag_config("mention", background="#FFDDAF", foreground="black", underline=1)
                         if soundvar.get() == 1:
-                            if '@' + usr in textdata:
+                            if search:
                                 winsound.PlaySound(resource_path("_files\\mention.wav"),
                                                    winsound.SND_FILENAME | winsound.SND_ASYNC)
                             else:
@@ -703,12 +703,12 @@ def establish_conn():
     def send_message(var):
         try:
             global messageSend
-            if not messageSend.get() == '':
+            if not messageSend.get().strip() == '':
                 message = "%s: %s" % (usr, messageSend.get())
                 message = message.replace('\n', ' ').replace('\r', ' ')
                 print(message)
-                messageSend.delete(0, END)
                 sock.send(message.encode('utf-8'))
+            messageSend.delete(0, END)
         except:
             print(traceback.format_exc())
 

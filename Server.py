@@ -15,7 +15,7 @@ else:
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = (ip, int(port))
-print("# Proximity Server v1.3.0\n")
+print("# Proximity Server v1.4.0\n")
 print(f"\nHosting '{servername}' on '%s' port '%s'\n" % server_address)
 try:
     sock.bind(server_address)
@@ -31,7 +31,7 @@ sock.listen(10)
 
 
 def get_new(conn, addr):
-    global clients
+    global clients, connections
     while not conn._closed:
         data = conn.recv(256)
         try:
@@ -46,10 +46,10 @@ def get_new(conn, addr):
             if (conn, addr) in connections:
                 connections.remove((conn, addr))
             for x in connections:
-                lst = [';;', str(clients[conn[1]] + ' has left the server'),
+                lst = [';;', str(clients[conn.getpeername()] + ' has left the server'),
                        '\n'.join(clients[c[1]] for c in connections),
                        servername]
-                conn[0].send(pickle.dumps(lst))
+                x[0].send(pickle.dumps(lst))
             print(clients[addr] + ' has left the server')
             try:
                 clients[addr]
@@ -67,8 +67,7 @@ while True:
     data = connection.recv(256)
     init = pickle.loads(data)
     connections.append((connection, addr))
-    for conn in connections:
-        clients[conn[1]] = init[1]
+    clients[addr] = init[1]
     for conn in connections:
         print(clients)
         lst = ['::', str(init[1] + ' has joined the server'), '\n'.join(clients[c[1]] for c in connections), servername]
