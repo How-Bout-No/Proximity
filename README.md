@@ -6,6 +6,6 @@ Proximity is a chat program, which was recently completely overhauled to a brand
 
 The source is available to everyone, whether to be adjusted to one's needs or to supply any necessary information to those who need it.
 
-The scripts are released as EXE's as to not require a full client-side installation of Python 3.6, in other words it just creates less hassle, and there's less things to handle or require.
+The scripts are released as EXE's as to not require a full client-side installation of Python, in other words it just creates less hassle, and there's less things to handle or require. However, if you already have Python installed and would not mind installing the necessary modules, you can just run it off the source file.
 
-Proximity works right out of the box, immediately prepared to a chat server that you supply it with.
+Proximity works right out of the box, immediately prepared to work with any compatible chat server that you supply it with.
